@@ -39,7 +39,7 @@ function App() {
           <div className="min-h-screen bg-background">
             <Header 
               currentUser={currentUser}
-              notificationCount={3}
+              notificationCount={0}
               onSearch={(query) => console.log("Search:", query)}
             />
             <main>
