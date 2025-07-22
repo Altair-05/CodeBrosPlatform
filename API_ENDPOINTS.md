@@ -1,36 +1,36 @@
-CodeBros Platform API Endpoints
+###CodeBros Platform API Endpoints
 This document outlines the API endpoints used in the CodeBros Developer Networking Platform, based on the server/routes.ts file.
 
-User Routes
+##User Routes
 These endpoints manage user profiles and related information.
 
-GET /api/users
+1. GET /api/users
 
-Description: Retrieves a list of all registered users.
+- Description: Retrieves a list of all registered users.
 
-Response (Success): 200 OK with an array of user objects.
+- Response (Success): 200 OK with an array of user objects.
 
-Response (Error): 500 Internal Server Error if fetching fails.
+- Response (Error): 500 Internal Server Error if fetching fails.
 
-GET /api/users/search
+2. GET /api/users/search
 
-Description: Searches for users based on various criteria such as query (general search), experienceLevel (array), skills (array), openToCollaborate (boolean), and isOnline (boolean).
+- Description: Searches for users based on various criteria such as query (general search), experienceLevel (array), skills (array), openToCollaborate (boolean), and isOnline (boolean).
 
-Query Parameters:
+- Query Parameters:
 
-query (optional): General search string.
+* query (optional): General search string.
 
-experienceLevel (optional): Can be a single string or an array of experience levels.
+* experienceLevel (optional): Can be a single string or an array of experience levels.
 
-skills (optional): Can be a single string or an array of skills.
+* skills (optional): Can be a single string or an array of skills.
 
-openToCollaborate (optional): true to filter users open to collaboration.
+* openToCollaborate (optional): true to filter users open to collaboration.
 
-isOnline (optional): true to filter online users.
+* isOnline (optional): true to filter online users.
 
-Response (Success): 200 OK with an array of matching user objects.
+- Response (Success): 200 OK with an array of matching user objects.
 
-Response (Error): 400 Bad Request for invalid search parameters, 500 Internal Server Error for other failures.
+- Response (Error): 400 Bad Request for invalid search parameters, 500 Internal Server Error for other failures.
 
 GET /api/users/:id
 
