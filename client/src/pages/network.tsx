@@ -11,6 +11,7 @@ import { ConnectionModal } from "@/components/connection-modal";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Search } from "lucide-react";
+import { useLocation } from "wouter";
 
 interface SearchFilters {
   query: string;
@@ -33,6 +34,7 @@ export default function Network() {
   const [sortBy, setSortBy] = useState<"newest" | "popular" | "online">("newest");
   const [showConnectionModal, setShowConnectionModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [, setLocation] = useLocation();
 
   // Fetch users with search/filter
   const { data: users = [], isLoading } = useQuery<User[]>({
@@ -318,7 +320,7 @@ export default function Network() {
                         currentUserId={1} // TODO: Get from auth context
                         onConnect={handleConnect}
                         onMessage={(userId) => console.log("Message", userId)}
-                        onViewProfile={(userId) => console.log("View profile", userId)}
+                        onViewProfile={(userId) => setLocation(`/profile/${userId}`)}
                       />
                     ))}
                   </div>

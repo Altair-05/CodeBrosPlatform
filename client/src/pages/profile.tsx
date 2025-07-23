@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { MapPin, Calendar, Globe, Github, Linkedin, Mail, MessageCircle, UserPlus } from "lucide-react";
 import { getExperienceLevelColor, getExperienceLevelLabel, getOnlineStatus } from "@/lib/utils";
+import { Link } from "wouter";
 
 export default function Profile() {
   const { id } = useParams<{ id: string }>();
@@ -16,6 +17,20 @@ export default function Profile() {
   const { data: user, isLoading } = useQuery<User>({
     queryKey: [`/api/users/${userId}`],
   });
+
+  // Calculate profile completion percentage
+  const calculateProfileCompletion = (user: User) => {
+    const fields = [
+      user.bio,
+      (user.skills?.length ?? 0) > 0,
+      user.profileImage,
+      user.title,
+      user.email,
+      user.username
+    ];
+    const filledFields = fields.filter(field => field && field !== "").length;
+    return Math.round((filledFields / fields.length) * 100);
+  };
 
   if (isLoading) {
     return (
@@ -56,7 +71,11 @@ export default function Profile() {
     );
   }
 
-  const { color: statusColor, text: statusText } = getOnlineStatus(user.isOnline, user.lastSeen);
+  const { color: statusColor, text: statusText } = getOnlineStatus(
+    user.isOnline ?? false,
+    user.lastSeen ?? undefined
+  );
+  const profileCompletion = calculateProfileCompletion(user);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -67,7 +86,7 @@ export default function Profile() {
           <CardContent className="p-8">
             <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-6">
               <Avatar className="w-24 h-24">
-                <AvatarImage src={user.profileImage} alt={`${user.firstName} ${user.lastName}`} />
+                <AvatarImage src={user.profileImage ?? undefined} alt={`${user.firstName} ${user.lastName}`} />
                 <AvatarFallback className="text-2xl">
                   {user.firstName[0]}{user.lastName[0]}
                 </AvatarFallback>
@@ -80,17 +99,32 @@ export default function Profile() {
                       {user.firstName} {user.lastName}
                     </h1>
                     <p className="text-xl text-gray-600 dark:text-gray-400">{user.title}</p>
+                    <div className="mt-2">
+                      <div className="relative w-32 h-2 bg-gray-200 dark:bg-gray-700 rounded-full">
+                        <div
+                          className="absolute h-2 bg-blue-500 rounded-full"
+                          style={{ width: `${profileCompletion}%` }}
+                        ></div>
+                      </div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                        Profile Completion: {profileCompletion}%
+                      </p>
+                    </div>
                   </div>
                   
                   <div className="flex space-x-3 mt-4 sm:mt-0">
-                    <Button className="bg-brand-blue text-white hover:bg-brand-blue-dark">
-                      <MessageCircle size={16} className="mr-2" />
-                      Message
-                    </Button>
-                    <Button variant="outline">
-                      <UserPlus size={16} className="mr-2" />
-                      Connect
-                    </Button>
+                    <Link href={`/messages?user=${user.id}`}>
+                      <Button className="bg-brand-blue text-white hover:bg-brand-blue-dark">
+                        <MessageCircle size={16} className="mr-2" />
+                        Message
+                      </Button>
+                    </Link>
+                    <Link href={`/network?connect=${user.id}`}>
+                      <Button variant="outline">
+                        <UserPlus size={16} className="mr-2" />
+                        Connect
+                      </Button>
+                    </Link>
                   </div>
                 </div>
 
@@ -137,15 +171,11 @@ export default function Profile() {
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
-                  {user.skills.length > 0 ? (
-                    user.skills.map((skill, index) => (
-                      <Badge key={index} variant="secondary" className="text-sm">
-                        {skill}
-                      </Badge>
-                    ))
-                  ) : (
-                    <p className="text-gray-500 dark:text-gray-400">No skills listed.</p>
-                  )}
+                  {(user.skills ?? []).map((skill, index) => (
+                    <Badge key={index} variant="secondary" className="text-sm">
+                      {skill}
+                    </Badge>
+                  ))}
                 </div>
               </CardContent>
             </Card>
