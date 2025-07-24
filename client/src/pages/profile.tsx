@@ -18,18 +18,22 @@ export default function Profile() {
     queryKey: [`/api/users/${userId}`],
   });
 
-  // Calculate profile completion percentage
+  // Calculate profile completion percentage and missing fields
   const calculateProfileCompletion = (user: User) => {
     const fields = [
-      user.bio,
-      (user.skills?.length ?? 0) > 0,
-      user.profileImage,
-      user.title,
-      user.email,
-      user.username
+      { key: 'bio', label: 'Add a bio', value: !!user.bio && user.bio !== '' },
+      { key: 'skills', label: 'Add at least one skill', value: (user.skills?.length ?? 0) > 0 },
+      { key: 'profileImage', label: 'Upload a profile image', value: !!user.profileImage && user.profileImage !== '' },
+      { key: 'title', label: 'Add a title', value: !!user.title && user.title !== '' },
+      { key: 'email', label: 'Add your email', value: !!user.email && user.email !== '' },
+      { key: 'username', label: 'Add a username', value: !!user.username && user.username !== '' },
     ];
-    const filledFields = fields.filter(field => field && field !== "").length;
-    return Math.round((filledFields / fields.length) * 100);
+    const filledFields = fields.filter(field => field.value).length;
+    const missingFields = fields.filter(field => !field.value).map(field => field.label);
+    return {
+      percentage: Math.round((filledFields / fields.length) * 100),
+      missingFields,
+    };
   };
 
   if (isLoading) {
@@ -75,7 +79,7 @@ export default function Profile() {
     user.isOnline ?? false,
     user.lastSeen ?? undefined
   );
-  const profileCompletion = calculateProfileCompletion(user);
+  const { percentage: profileCompletion, missingFields } = calculateProfileCompletion(user);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -146,6 +150,25 @@ export default function Profile() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Recommendations for incomplete profiles */}
+        {profileCompletion < 100 && (
+          <Card className="mb-8 border-2 border-yellow-400">
+            <CardHeader>
+              <CardTitle>Complete Your Profile</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-yellow-700 dark:text-yellow-300 mb-2">
+                To get the most out of CodeBros, complete your profile:
+              </p>
+              <ul className="list-disc list-inside text-yellow-700 dark:text-yellow-300">
+                {missingFields.map((field, idx) => (
+                  <li key={idx}>{field}</li>
+                ))}
+              </ul>
+            </CardContent>
+          </Card>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           
