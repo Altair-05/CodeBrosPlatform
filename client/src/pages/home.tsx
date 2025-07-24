@@ -43,19 +43,38 @@ export default function Home() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Welcome Banner */}
-        <div className="bg-gradient-to-r from-brand-blue to-brand-blue-dark rounded-lg p-8 mb-8 text-white">
+        <div className="bg-gradient-to-r from-brand-blue to-brand-blue-dark rounded-lg p-8 mb-8">
           <h1 className="text-3xl font-bold mb-2">Welcome to CodeBros</h1>
-          <p className="text-blue-100 text-lg mb-6">
-            Connect with fellow developers, share knowledge, and build amazing projects together.
-          </p>
+        <p className="text-lg mb-6 text-brand-blue">
+  Connect with fellow developers, share knowledge, and build amazing projects together.
+</p>
+
+
           <div className="flex space-x-4">
             <Link href="/network">
-              <Button className="bg-white text-brand-blue hover:bg-gray-100">
+               <Button
+  variant="outline"
+  className="border-[hsl(var(--brand-blue))] text-[hsl(var(--brand-blue))] 
+             hover:bg-gray-100 hover:text-[hsl(var(--brand-blue))] 
+             dark:border-[hsl(var(--brand-blue))] dark:text-[hsl(var(--brand-blue))] 
+                dark:hover:bg-[hsl(209,45%,14%)] dark:hover:text-[hsl(var(--primary-foreground))] 
+             focus:ring-2 focus:ring-[hsl(var(--brand-blue))] transition"
+>
+
                 Explore Network
               </Button>
             </Link>
             <Link href="/profile/1">
-              <Button variant="outline" className="border-white text-white hover:bg-white hover:text-brand-blue">
+  <Button
+  variant="outline"
+  className="border-[hsl(var(--brand-blue))] text-[hsl(var(--brand-blue))] 
+             hover:bg-gray-100 hover:text-[hsl(var(--brand-blue))] 
+             dark:border-[hsl(var(--brand-blue))] dark:text-[hsl(var(--brand-blue))] 
+                 dark:hover:bg-[hsl(209,45%,14%)] dark:hover:text-[hsl(var(--primary-foreground))] 
+             focus:ring-2 focus:ring-[hsl(var(--brand-blue))] transition"
+>
+
+
                 Complete Profile
               </Button>
             </Link>
@@ -121,7 +140,12 @@ export default function Home() {
                 Featured Developers
               </h2>
               <Link href="/network">
-                <Button variant="outline">View All</Button>
+                <Button variant="outline"   className="border-[hsl(var(--brand-blue))] text-[hsl(var(--brand-blue))] 
+             hover:bg-gray-100 hover:text-[hsl(var(--brand-blue))] 
+             dark:border-[hsl(var(--brand-blue))] dark:text-[hsl(var(--brand-blue))] 
+             dark:hover:bg-[hsl(209,45%,14%)] dark:hover:text-[hsl(var(--primary-foreground))] 
+             focus:ring-2 focus:ring-[hsl(var(--brand-blue))] transition">
+              View All</Button>
               </Link>
             </div>
 

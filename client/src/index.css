@@ -139,3 +139,42 @@
     --tw-ring-color: hsl(var(--brand-blue));
   }
 }
+
+/* Light mode hover styles */
+.hover\:bg-brand-blue:hover {
+  background-color: hsl(var(--brand-blue));
+}
+.hover\:text-white:hover {
+  color: white;
+}
+.hover\:shadow-md:hover {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Dark mode hover styles */
+.dark .dark\:hover\:bg-brand-blue-dark:hover {
+  background-color: hsl(var(--brand-blue-dark));
+}
+.dark .dark\:hover\:text-primary-foreground:hover {
+  color: hsl(var(--primary-foreground));
+}
+.dark .dark\:hover\:shadow-lg:hover {
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Focus ring support */
+.focus\:ring-brand-blue:focus {
+  --tw-ring-color: hsl(var(--brand-blue));
+}
+
+/* Optional: For consistent text in dark mode */
+@layer utilities {
+  .text-brand-blue {
+    color: hsl(217, 91%, 60%); /* Lighter red for dark mode */
+
+      .hover-brand-light:hover {
+    background-color: hsl(var(--brand-blue-dark));
+    color: white;
+  }
+  }
+}
