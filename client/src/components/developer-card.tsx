@@ -23,7 +23,7 @@ export function DeveloperCard({
   onMessage,
   onViewProfile,
 }: DeveloperCardProps) {
-  const { color: statusColor, text: statusText } = getOnlineStatus(user.isOnline, user.lastSeen);
+  const { color: statusColor, text: statusText } = getOnlineStatus(!!user.isOnline, user.lastSeen ?? undefined);
   const isOwnProfile = currentUserId === user.id;
 
   const handleConnect = () => {
@@ -97,7 +97,7 @@ export function DeveloperCard({
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center space-x-4">
             <Avatar className="w-16 h-16">
-              <AvatarImage src={user.profileImage} alt={`${user.firstName} ${user.lastName}`} />
+              <AvatarImage src={user.profileImage || ''} alt={`${user.firstName} ${user.lastName}`} />
               <AvatarFallback className="text-lg">
                 {user.firstName[0]}{user.lastName[0]}
               </AvatarFallback>
@@ -125,7 +125,7 @@ export function DeveloperCard({
         )}
 
         <div className="flex flex-wrap gap-2 mb-4">
-          {user.skills.slice(0, 4).map((skill, index) => (
+          {(user.skills ?? []).slice(0, 4).map((skill, index) => (
             <Badge
               key={index}
               variant="secondary"
@@ -134,9 +134,9 @@ export function DeveloperCard({
               {skill}
             </Badge>
           ))}
-          {user.skills.length > 4 && (
+          {(user.skills ?? []).length > 4 && (
             <Badge variant="secondary" className="text-xs">
-              +{user.skills.length - 4} more
+              +{(user.skills ?? []).length - 4} more
             </Badge>
           )}
         </div>
