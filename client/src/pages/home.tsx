@@ -30,7 +30,10 @@ export default function Home() {
             <div className="h-32 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {[...Array(3)].map((_, i) => (
-                <div key={i} className="h-24 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                <div
+                  key={i}
+                  className="h-24 bg-gray-200 dark:bg-gray-700 rounded-lg"
+                ></div>
               ))}
             </div>
           </div>
@@ -46,7 +49,8 @@ export default function Home() {
         <div className="bg-gradient-to-r from-brand-blue to-brand-blue-dark rounded-lg p-8 mb-8 text-white">
           <h1 className="text-3xl font-bold mb-2">Welcome to CodeBros</h1>
           <p className="text-blue-100 text-lg mb-6">
-            Connect with fellow developers, share knowledge, and build amazing projects together.
+            Connect with fellow developers, share knowledge, and build amazing
+            projects together.
           </p>
           <div className="flex space-x-4">
             <Link href="/network">
@@ -55,7 +59,10 @@ export default function Home() {
               </Button>
             </Link>
             <Link href="/profile/1">
-              <Button variant="outline" className="border-white text-white hover:bg-white hover:text-brand-blue">
+              <Button
+                variant="outline"
+                className="border-white text-white hover:bg-white hover:text-brand-blue"
+              >
                 Complete Profile
               </Button>
             </Link>
@@ -74,7 +81,9 @@ export default function Home() {
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">
                     {stats?.totalUsers || users.length}
                   </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Active Developers</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Active Developers
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -90,7 +99,9 @@ export default function Home() {
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">
                     {stats?.activeProjects || 156}
                   </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Active Projects</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Active Projects
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -106,7 +117,9 @@ export default function Home() {
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">
                     {stats?.connections || 1293}
                   </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Connections Made</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Connections Made
+                  </p>
                 </div>
               </div>
             </CardContent>
@@ -133,7 +146,9 @@ export default function Home() {
                   currentUserId={1} // TODO: Get from auth context
                   onConnect={(userId) => console.log("Connect to", userId)}
                   onMessage={(userId) => console.log("Message", userId)}
-                  onViewProfile={(userId) => console.log("View profile", userId)}
+                  onViewProfile={(userId) =>
+                    console.log("View profile", userId)
+                  }
                 />
               ))}
             </div>
