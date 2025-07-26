@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocation } from "wouter"; // Import useLocation for navigation
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { User } from "@shared/schema";
 import { Card, CardContent } from "@/components/ui/card";
@@ -22,6 +23,7 @@ interface SearchFilters {
 
 export default function Network() {
   const { toast } = useToast();
+  const [, setLocation] = useLocation(); // Get the setLocation function from wouter
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState<SearchFilters>({
     query: "",
@@ -126,6 +128,11 @@ export default function Network() {
 
   const handleSendRequest = (userId: number, message?: string) => {
     sendConnectionMutation.mutate({ receiverId: userId, message });
+  };
+  
+  // FIX: Added handler to navigate to the user's profile page.
+  const handleViewProfile = (userId: number) => {
+    setLocation(`/profile/${userId}`);
   };
 
   const sortedUsers = [...users].sort((a, b) => {
@@ -318,7 +325,8 @@ export default function Network() {
                         currentUserId={1} // TODO: Get from auth context
                         onConnect={handleConnect}
                         onMessage={(userId) => console.log("Message", userId)}
-                        onViewProfile={(userId) => console.log("View profile", userId)}
+                        // FIX: Replaced console.log with the new navigation handler.
+                        onViewProfile={handleViewProfile}
                       />
                     ))}
                   </div>
