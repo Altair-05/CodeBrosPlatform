@@ -4,12 +4,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { DeveloperCard } from "@/components/developer-card";
 import { Users, Briefcase, Handshake } from "lucide-react";
-import { Link } from "wouter";
+import { Link ,useLocation } from "wouter";
 
 export default function Home() {
   const { data: users = [], isLoading } = useQuery<User[]>({
     queryKey: ["/api/users"],
   });
+  const [, setLocation] = useLocation();
 
   const { data: stats } = useQuery({
     queryKey: ["/api/stats"],
@@ -19,6 +20,10 @@ export default function Home() {
       connections: 1293,
     }),
   });
+
+  const handleViewProfile = (userId: number) => {
+    setLocation(`/profile/${userId}`);
+  };
 
   const featuredUsers = users.slice(0, 4);
 
@@ -133,7 +138,7 @@ export default function Home() {
                   currentUserId={1} // TODO: Get from auth context
                   onConnect={(userId) => console.log("Connect to", userId)}
                   onMessage={(userId) => console.log("Message", userId)}
-                  onViewProfile={(userId) => console.log("View profile", userId)}
+                  onViewProfile={handleViewProfile}
                 />
               ))}
             </div>
