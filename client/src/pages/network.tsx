@@ -1,7 +1,7 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useLocation } from "wouter"; // Import useLocation for navigation
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { User } from "@shared/schema";
+import { User } from "@shared/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,7 +23,7 @@ interface SearchFilters {
 
 export default function Network() {
   const { toast } = useToast();
-  const [, setLocation] = useLocation(); // Get the setLocation function from wouter
+  const [location, setLocation] = useLocation(); // Get both location and setLocation
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState<SearchFilters>({
     query: "",
@@ -32,6 +32,16 @@ export default function Network() {
     openToCollaborate: false,
     isOnline: false,
   });
+
+  // Parse search query from URL on component mount
+  React.useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const searchParam = urlParams.get('search');
+    if (searchParam) {
+      setSearchQuery(searchParam);
+      setFilters(prev => ({ ...prev, query: searchParam }));
+    }
+  }, [location]);
   const [sortBy, setSortBy] = useState<"newest" | "popular" | "online">("newest");
   const [showConnectionModal, setShowConnectionModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -118,20 +128,20 @@ export default function Network() {
     }));
   };
 
-  const handleConnect = (userId: number) => {
-    const user = users.find(u => u.id === userId);
+  const handleConnect = (userId: string) => {
+    const user = users.find(u => u._id === userId);
     if (user) {
       setSelectedUser(user);
       setShowConnectionModal(true);
     }
   };
 
-  const handleSendRequest = (userId: number, message?: string) => {
+  const handleSendRequest = (userId: string, message?: string) => {
     sendConnectionMutation.mutate({ receiverId: userId, message });
   };
   
   // FIX: Added handler to navigate to the user's profile page.
-  const handleViewProfile = (userId: number) => {
+  const handleViewProfile = (userId: string) => {
     setLocation(`/profile/${userId}`);
   };
 
@@ -143,7 +153,7 @@ export default function Network() {
         // Sort by number of connections (simulated)
         return Math.random() - 0.5;
       default:
-        return b.id - a.id; // newest first
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(); // newest first
     }
   });
 
@@ -320,9 +330,9 @@ export default function Network() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {sortedUsers.map((user) => (
                       <DeveloperCard
-                        key={user.id}
+                        key={user._id}
                         user={user}
-                        currentUserId={1} // TODO: Get from auth context
+                        currentUserId="current" // TODO: Get from auth context
                         onConnect={handleConnect}
                         onMessage={(userId) => console.log("Message", userId)}
                         // FIX: Replaced console.log with the new navigation handler.
