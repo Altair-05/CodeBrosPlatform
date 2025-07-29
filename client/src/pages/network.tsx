@@ -136,7 +136,7 @@ export default function Network() {
     }
   };
 
-  const handleSendRequest = (userId: string, message?: string) => {
+  const handleSendRequest = (userId: number, message?: string) => {
     sendConnectionMutation.mutate({ receiverId: userId, message });
   };
   
@@ -198,8 +198,8 @@ export default function Network() {
                         <Checkbox
                           id={level}
                           checked={filters.experienceLevel.includes(level)}
-                          onCheckedChange={(checked) => 
-                            handleExperienceLevelChange(level, checked as boolean)
+                          onCheckedChange={(checked: boolean) => 
+                            handleExperienceLevelChange(level, checked)
                           }
                         />
                         <Label htmlFor={level} className="text-sm text-gray-600 dark:text-gray-400 capitalize">
@@ -221,8 +221,8 @@ export default function Network() {
                         <Checkbox
                           id={skill}
                           checked={filters.skills.includes(skill)}
-                          onCheckedChange={(checked) => 
-                            handleSkillChange(skill, checked as boolean)
+                          onCheckedChange={(checked: boolean) => 
+                            handleSkillChange(skill, checked)
                           }
                         />
                         <Label htmlFor={skill} className="text-sm text-gray-600 dark:text-gray-400">
@@ -243,8 +243,8 @@ export default function Network() {
                       <Checkbox
                         id="openToCollab"
                         checked={filters.openToCollaborate}
-                        onCheckedChange={(checked) => 
-                          handleFilterChange("openToCollaborate", checked as boolean)
+                        onCheckedChange={(checked: boolean) => 
+                          handleFilterChange("openToCollaborate", checked)
                         }
                       />
                       <Label htmlFor="openToCollab" className="text-sm text-gray-600 dark:text-gray-400">
@@ -255,8 +255,8 @@ export default function Network() {
                       <Checkbox
                         id="online"
                         checked={filters.isOnline}
-                        onCheckedChange={(checked) => 
-                          handleFilterChange("isOnline", checked as boolean)
+                        onCheckedChange={(checked: boolean) => 
+                          handleFilterChange("isOnline", checked)
                         }
                       />
                       <Label htmlFor="online" className="text-sm text-gray-600 dark:text-gray-400">

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { User } from "@shared/schema";
+import { User } from "@shared/types";
 import {
   Dialog,
   DialogContent,
@@ -31,7 +31,7 @@ export function ConnectionModal({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (targetUser) {
-      onSendRequest(targetUser.id, message.trim() || undefined);
+      onSendRequest(parseInt(targetUser._id), message.trim() || undefined);
       setMessage("");
       onClose();
     }
@@ -54,7 +54,7 @@ export function ConnectionModal({
         <div className="space-y-4">
           <div className="flex items-center space-x-4">
             <Avatar className="w-12 h-12">
-              <AvatarImage src={targetUser.profileImage} alt={`${targetUser.firstName} ${targetUser.lastName}`} />
+              <AvatarImage src={targetUser.profileImage || undefined} alt={`${targetUser.firstName} ${targetUser.lastName}`} />
               <AvatarFallback>
                 {targetUser.firstName[0]}{targetUser.lastName[0]}
               </AvatarFallback>

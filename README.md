@@ -32,6 +32,9 @@ CodeBros helps developers **connect**, **collaborate**, and **grow together**. ð
 - **Dark/Light Themes:** Switch between professional themes for comfort.
 - **Responsive Design:** Works seamlessly on desktop and mobile.
 - **In-Memory Storage:** Fast prototyping and testing (no DB setup required).
+- **Automated Testing:** Comprehensive test suite with Jest.
+- **Code Quality:** ESLint and Prettier for consistent code style.
+- **CI/CD Pipeline:** Automated checks on every PR and push.
 
 ---
 
@@ -111,9 +114,16 @@ set NODE_ENV=development && tsx server/index.ts
 
 ## ðŸ”§ Available Scripts
 - `dev.bat` - Start development server (Windows-friendly)
+- `npm run dev` - Start development server (cross-platform)
 - `npm run build` - Build frontend for production
 - `start.bat` - Start production server (Windows-friendly)
 - `npm run check` - Type checking (TypeScript)
+- `npm run lint` - Run ESLint
+- `npm run lint:fix` - Fix ESLint issues automatically
+- `npm run format` - Format code with Prettier
+- `npm run test` - Run tests
+- `npm run test:watch` - Run tests in watch mode
+- `npm run test:coverage` - Run tests with coverage report
 
 ---
 
@@ -122,10 +132,11 @@ Contributions are welcome! To get started:
 1. Fork the repository
 2. Create a new branch (`git checkout -b feature/your-feature`)
 3. Make your changes
-4. Commit and push (`git commit -m 'Add feature' && git push origin feature/your-feature`)
-5. Open a Pull Request
+4. Run tests and linting (`npm run test && npm run lint`)
+5. Commit and push (`git commit -m 'Add feature' && git push origin feature/your-feature`)
+6. Open a Pull Request
 
-Please read the [CONTRIBUTION.md](CONTRIBUTION.md) for more details.
+Please read the [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
 ---
 
