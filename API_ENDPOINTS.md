@@ -1,7 +1,9 @@
 # CodeBros Platform API Endpoints
+
 This document outlines the API endpoints used in the CodeBros Developer Networking Platform, based on the server/routes.ts file.
 
 ## User Routes
+
 These endpoints manage user profiles and related information.
 
 ### 1. GET /api/users
@@ -17,16 +19,15 @@ These endpoints manage user profiles and related information.
 - Description: Searches for users based on various criteria such as query (general search), experienceLevel (array), skills (array), openToCollaborate (boolean), and isOnline (boolean).
 
 - Query Parameters:
+  - query (optional): General search string.
 
-  * query (optional): General search string.
+  - experienceLevel (optional): Can be a single string or an array of experience levels.
 
-  * experienceLevel (optional): Can be a single string or an array of experience levels.
+  - skills (optional): Can be a single string or an array of skills.
 
-  * skills (optional): Can be a single string or an array of skills.
+  - openToCollaborate (optional): true to filter users open to collaboration.
 
-  * openToCollaborate (optional): true to filter users open to collaboration.
-
-  * isOnline (optional): true to filter online users.
+  - isOnline (optional): true to filter online users.
 
 - Response (Success): 200 OK with an array of matching user objects.
 
@@ -83,6 +84,7 @@ These endpoints manage user profiles and related information.
 - Response (Error): 500 Internal Server Error if the update fails.
 
 ## Connection Routes
+
 These endpoints manage connection requests and established connections between users.
 
 ### 7. GET /api/connections/user/:userId
@@ -142,6 +144,7 @@ These endpoints manage connection requests and established connections between u
 - Response (Error): 400 Bad Request for invalid status update data.
 
 ## Message Routes
+
 These endpoints handle messaging functionality between connected users.
 
 ### 12. GET /api/messages/conversation/:user1Id/:user2Id

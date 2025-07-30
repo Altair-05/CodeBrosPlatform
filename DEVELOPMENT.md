@@ -23,17 +23,20 @@ This guide provides detailed information for developers working on CodeBrosPlatf
 ### Initial Setup
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/your-username/CodeBrosPlatform.git
    cd CodeBrosPlatform
    ```
 
 2. **Install dependencies**
+
    ```bash
    npm install
    ```
 
 3. **Start development server**
+
    ```bash
    npm run dev
    ```
@@ -71,18 +74,18 @@ CodeBrosPlatform/
 
 ### Available Scripts
 
-| Script | Description |
-|--------|-------------|
-| `npm run dev` | Start development server |
-| `npm run build` | Build for production |
-| `npm run start` | Start production server |
-| `npm run lint` | Run ESLint |
-| `npm run lint:fix` | Fix ESLint issues |
-| `npm run format` | Format code with Prettier |
-| `npm run test` | Run tests |
-| `npm run test:watch` | Run tests in watch mode |
-| `npm run test:coverage` | Run tests with coverage |
-| `npm run type-check` | TypeScript type checking |
+| Script                  | Description               |
+| ----------------------- | ------------------------- |
+| `npm run dev`           | Start development server  |
+| `npm run build`         | Build for production      |
+| `npm run start`         | Start production server   |
+| `npm run lint`          | Run ESLint                |
+| `npm run lint:fix`      | Fix ESLint issues         |
+| `npm run format`        | Format code with Prettier |
+| `npm run test`          | Run tests                 |
+| `npm run test:watch`    | Run tests in watch mode   |
+| `npm run test:coverage` | Run tests with coverage   |
+| `npm run type-check`    | TypeScript type checking  |
 
 ## Code Quality
 
@@ -96,11 +99,13 @@ The project uses ESLint for code linting with the following configuration:
 - Common best practices
 
 Run linting:
+
 ```bash
 npm run lint
 ```
 
 Fix issues automatically:
+
 ```bash
 npm run lint:fix
 ```
@@ -116,6 +121,7 @@ Prettier is used for code formatting with the following settings:
 - Semicolons
 
 Format code:
+
 ```bash
 npm run format
 ```
@@ -123,6 +129,7 @@ npm run format
 ### TypeScript
 
 The project uses TypeScript for type safety. Run type checking:
+
 ```bash
 npm run type-check
 ```
@@ -156,6 +163,7 @@ npm run test:coverage
 Tests should be placed in `__tests__` directories or have `.test.ts` or `.spec.ts` extensions.
 
 Example test structure:
+
 ```typescript
 describe('ComponentName', () => {
   it('should render correctly', () => {
@@ -171,6 +179,7 @@ describe('ComponentName', () => {
 ### Test Coverage
 
 The project aims for at least 70% test coverage across:
+
 - Branches
 - Functions
 - Lines
@@ -191,6 +200,7 @@ npm run build
 ```
 
 The build process:
+
 1. Compiles TypeScript
 2. Bundles frontend with Vite
 3. Bundles backend with esbuild
@@ -248,4 +258,4 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed contribution guidelines.
 
 ## License
 
-This project is licensed under the MIT License. See [LICENSE](LICENSE) for details. 
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.

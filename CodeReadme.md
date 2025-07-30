@@ -7,6 +7,7 @@ CodeBros is a full-stack web application designed to connect developers, enablin
 ## System Architecture
 
 ### Frontend Architecture
+
 - **Framework**: React with TypeScript
 - **Build Tool**: Vite for development and production builds
 - **Routing**: Wouter for client-side routing
@@ -16,6 +17,7 @@ CodeBros is a full-stack web application designed to connect developers, enablin
 - **Theme**: Light/dark mode support with context-based theme provider
 
 ### Backend Architecture
+
 - **Runtime**: Node.js with Express.js
 - **Language**: TypeScript with ES modules
 - **Database**: PostgreSQL with Drizzle ORM
@@ -24,6 +26,7 @@ CodeBros is a full-stack web application designed to connect developers, enablin
 - **API Design**: RESTful API with JSON responses
 
 ### Development Environment
+
 - **Deployment Platform**: Replit-optimized with cartographer plugin
 - **Hot Reload**: Vite HMR for frontend, tsx for backend development
 - **Error Handling**: Runtime error overlay for development
@@ -31,28 +34,33 @@ CodeBros is a full-stack web application designed to connect developers, enablin
 ## Key Components
 
 ### Database Schema
+
 - **Users Table**: Stores user profiles with skills, experience levels, and collaboration preferences
 - **Connections Table**: Manages developer connections with status tracking (pending, accepted, declined)
 - **Messages Table**: Handles direct messaging between connected users
 
 ### User Management
+
 - User profiles with customizable information (bio, skills, experience level)
 - Online status tracking and last seen timestamps
 - Profile images and collaboration preferences
 - Search and discovery functionality with filtering
 
 ### Connection System
+
 - Send and receive connection requests with optional messages
 - Connection status management (pending, accepted, declined)
 - View network of connected developers
 
 ### Messaging System
+
 - Direct messaging between connected users
 - Message read status tracking
 - Conversation management with unread counts
 - Real-time message display
 
 ### UI Components
+
 - Comprehensive component library based on shadcn/ui
 - Responsive design with mobile-first approach
 - Accessible components following ARIA standards
@@ -68,6 +76,7 @@ CodeBros is a full-stack web application designed to connect developers, enablin
 ## External Dependencies
 
 ### Core Technologies
+
 - **Database**: Neon Database (serverless PostgreSQL)
 - **UI Components**: Radix UI primitives for accessible components
 - **Icons**: Lucide React for consistent iconography
@@ -75,6 +84,7 @@ CodeBros is a full-stack web application designed to connect developers, enablin
 - **Form Handling**: React Hook Form with Zod validation
 
 ### Development Tools
+
 - **TypeScript**: Strong typing across frontend and backend
 - **ESBuild**: Fast production builds
 - **PostCSS**: CSS processing with Tailwind
@@ -83,22 +93,26 @@ CodeBros is a full-stack web application designed to connect developers, enablin
 ## Deployment Strategy
 
 ### Development
+
 - Vite dev server with HMR for frontend
 - tsx for backend development with auto-restart
 - Shared TypeScript configuration for consistency
 
 ### Production
+
 - Vite production build generates optimized static assets
 - ESBuild bundles backend into single Node.js module
 - Express serves both API and static files
 - Database migrations handled via Drizzle Kit
 
 ### Environment Configuration
+
 - Environment variables for database connection
 - Separate development and production configurations
 - Replit-specific optimizations for cloud deployment
 
 ## Changelog
+
 - July 03, 2025. Initial setup
 
 ## User Preferences

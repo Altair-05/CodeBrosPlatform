@@ -19,7 +19,8 @@ A clear and concise description of any alternative solutions or features you've 
 Add any other context or screenshots about the feature request here.
 
 **Checklist:**
+
 - [ ] I have searched existing issues to avoid duplicates
 - [ ] I have provided a clear description of the feature
 - [ ] I have considered alternative solutions
-- [ ] This feature would be useful to other users 
+- [ ] This feature would be useful to other users

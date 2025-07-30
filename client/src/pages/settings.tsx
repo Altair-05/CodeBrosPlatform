@@ -1,30 +1,36 @@
-import React, { useState } from "react";
-import { useLocation } from "wouter";
-import { useAuth } from "@/contexts/auth-context";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
-import { Separator } from "@/components/ui/separator";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useToast } from "@/hooks/use-toast";
-import { X, Plus, Save, User, Shield, Bell, Palette } from "lucide-react";
+import React, { useState } from 'react';
+import { useLocation } from 'wouter';
+import { useAuth } from '@/contexts/auth-context';
+import { useQuery, useMutation } from '@tanstack/react-query';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
+import { Separator } from '@/components/ui/separator';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useToast } from '@/hooks/use-toast';
+import { X, Plus, Save, User, Shield, Bell, Palette } from 'lucide-react';
 
 export default function Settings() {
   const { user, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const [, setLocation] = useLocation();
-  const [activeTab, setActiveTab] = useState("profile");
+  const [activeTab, setActiveTab] = useState('profile');
 
   // Redirect if not authenticated
   React.useEffect(() => {
     if (!isAuthenticated) {
-      setLocation("/login");
+      setLocation('/login');
     }
   }, [isAuthenticated, setLocation]);
 
@@ -40,9 +46,7 @@ export default function Settings() {
               <p className="text-gray-600 dark:text-gray-400 mb-4">
                 You need to be signed in to access settings.
               </p>
-              <Button onClick={() => setLocation("/login")}>
-                Sign In
-              </Button>
+              <Button onClick={() => setLocation('/login')}>Sign In</Button>
             </div>
           </CardContent>
         </Card>
@@ -54,7 +58,9 @@ export default function Settings() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
       <div className="max-w-4xl mx-auto px-4">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Settings</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+            Settings
+          </h1>
           <p className="text-gray-600 dark:text-gray-400 mt-2">
             Manage your account and preferences
           </p>
@@ -67,44 +73,44 @@ export default function Settings() {
               <CardContent className="p-4">
                 <nav className="space-y-2">
                   <button
-                    onClick={() => setActiveTab("profile")}
+                    onClick={() => setActiveTab('profile')}
                     className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
-                      activeTab === "profile"
-                        ? "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300"
-                        : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+                      activeTab === 'profile'
+                        ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
+                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
                     }`}
                   >
                     <User size={16} />
                     <span>Profile</span>
                   </button>
                   <button
-                    onClick={() => setActiveTab("security")}
+                    onClick={() => setActiveTab('security')}
                     className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
-                      activeTab === "security"
-                        ? "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300"
-                        : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+                      activeTab === 'security'
+                        ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
+                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
                     }`}
                   >
                     <Shield size={16} />
                     <span>Security</span>
                   </button>
                   <button
-                    onClick={() => setActiveTab("notifications")}
+                    onClick={() => setActiveTab('notifications')}
                     className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
-                      activeTab === "notifications"
-                        ? "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300"
-                        : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+                      activeTab === 'notifications'
+                        ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
+                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
                     }`}
                   >
                     <Bell size={16} />
                     <span>Notifications</span>
                   </button>
                   <button
-                    onClick={() => setActiveTab("appearance")}
+                    onClick={() => setActiveTab('appearance')}
                     className={`w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-left transition-colors ${
-                      activeTab === "appearance"
-                        ? "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300"
-                        : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
+                      activeTab === 'appearance'
+                        ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
+                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
                     }`}
                   >
                     <Palette size={16} />
@@ -117,7 +123,7 @@ export default function Settings() {
 
           {/* Main Content */}
           <div className="lg:col-span-3">
-            {activeTab === "profile" && (
+            {activeTab === 'profile' && (
               <Card>
                 <CardHeader>
                   <CardTitle>Profile Settings</CardTitle>
@@ -127,7 +133,8 @@ export default function Settings() {
                     <Avatar className="w-20 h-20">
                       <AvatarImage src={user.profileImage} />
                       <AvatarFallback className="text-xl">
-                        {user.firstName[0]}{user.lastName[0]}
+                        {user.firstName[0]}
+                        {user.lastName[0]}
                       </AvatarFallback>
                     </Avatar>
                     <div>
@@ -167,8 +174,13 @@ export default function Settings() {
                   </div>
 
                   <div className="flex items-center space-x-2">
-                    <Switch id="openToCollaborate" defaultChecked={user.openToCollaborate} />
-                    <Label htmlFor="openToCollaborate">Open to collaboration opportunities</Label>
+                    <Switch
+                      id="openToCollaborate"
+                      defaultChecked={user.openToCollaborate}
+                    />
+                    <Label htmlFor="openToCollaborate">
+                      Open to collaboration opportunities
+                    </Label>
                   </div>
 
                   <Button className="w-full">
@@ -179,7 +191,7 @@ export default function Settings() {
               </Card>
             )}
 
-            {activeTab === "security" && (
+            {activeTab === 'security' && (
               <Card>
                 <CardHeader>
                   <CardTitle>Security Settings</CardTitle>
@@ -196,14 +208,18 @@ export default function Settings() {
                   </div>
 
                   <div>
-                    <Label htmlFor="confirmPassword">Confirm New Password</Label>
+                    <Label htmlFor="confirmPassword">
+                      Confirm New Password
+                    </Label>
                     <Input id="confirmPassword" type="password" />
                   </div>
 
                   <Separator />
 
                   <div>
-                    <h3 className="text-lg font-semibold mb-4">Two-Factor Authentication</h3>
+                    <h3 className="text-lg font-semibold mb-4">
+                      Two-Factor Authentication
+                    </h3>
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="font-medium">Two-factor authentication</p>
@@ -223,7 +239,7 @@ export default function Settings() {
               </Card>
             )}
 
-            {activeTab === "notifications" && (
+            {activeTab === 'notifications' && (
               <Card>
                 <CardHeader>
                   <CardTitle>Notification Settings</CardTitle>
@@ -279,7 +295,7 @@ export default function Settings() {
               </Card>
             )}
 
-            {activeTab === "appearance" && (
+            {activeTab === 'appearance' && (
               <Card>
                 <CardHeader>
                   <CardTitle>Appearance Settings</CardTitle>
@@ -335,4 +351,4 @@ export default function Settings() {
       </div>
     </div>
   );
-} 
+}

@@ -20,17 +20,20 @@ This project and everyone participating in it is governed by our Code of Conduct
 ## Getting Started
 
 1. **Fork the repository**
+
    ```bash
    git clone https://github.com/your-username/CodeBrosPlatform.git
    cd CodeBrosPlatform
    ```
 
 2. **Create a feature branch**
+
    ```bash
    git checkout -b feature/your-feature-name
    ```
 
 3. **Install dependencies**
+
    ```bash
    npm install
    ```
@@ -51,6 +54,7 @@ This project and everyone participating in it is governed by our Code of Conduct
 ### Environment Setup
 
 1. **Clone and install**
+
    ```bash
    git clone https://github.com/your-username/CodeBrosPlatform.git
    cd CodeBrosPlatform
@@ -58,6 +62,7 @@ This project and everyone participating in it is governed by our Code of Conduct
    ```
 
 2. **Start development server**
+
    ```bash
    npm run dev
    ```
@@ -147,6 +152,7 @@ describe('ComponentName', () => {
 ### Before Submitting
 
 1. **Run all checks**
+
    ```bash
    npm run lint
    npm run type-check
@@ -155,6 +161,7 @@ describe('ComponentName', () => {
    ```
 
 2. **Commit your changes**
+
    ```bash
    git add .
    git commit -m "feat: add new feature"
@@ -178,6 +185,7 @@ Use conventional commits format:
 - `chore:` - Build/tooling changes
 
 Example:
+
 ```
 feat: add user authentication system
 fix: resolve login form validation issue
@@ -209,11 +217,13 @@ When creating an issue, please include:
 ### Before Submitting a PR
 
 1. **Ensure all tests pass**
+
    ```bash
    npm run test
    ```
 
 2. **Check code style**
+
    ```bash
    npm run lint
    npm run format
@@ -250,4 +260,4 @@ When creating a PR, please include:
 
 Contributors will be recognized in the project's README and release notes.
 
-Thank you for contributing to CodeBrosPlatform! 🚀 
+Thank you for contributing to CodeBrosPlatform! 🚀

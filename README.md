@@ -6,6 +6,7 @@ CodeBros helps developers **connect**, **collaborate**, and **grow together**. �
 ---
 
 ## 📚 Table of Contents
+
 - [About](#about)
 - [Features](#features)
 - [Project Structure](#project-structure)
@@ -17,15 +18,16 @@ CodeBros helps developers **connect**, **collaborate**, and **grow together**. �
 - [FAQ](#faq)
 - [License](#license)
 
-
 ---
 
 ## 📝 About
+
 **CodeBrosPlatform** is a professional networking platform tailored for developers. Inspired by LinkedIn, it allows developers to showcase their skills, connect with peers, and grow their professional network. Built with a modern tech stack (React, TypeScript, Express), it features a clean UI, responsive design, and a focus on developer-centric features.
 
 ---
 
 ## 🌟 Features
+
 - **Developer Profiles:** Showcase skills, experience, and projects.
 - **Search & Filter:** Find developers by skills, experience, and more.
 - **Connection Requests:** Send, accept, and manage professional connections.
@@ -38,10 +40,10 @@ CodeBros helps developers **connect**, **collaborate**, and **grow together**. �
 
 ---
 
-
 ---
 
 ## 📁 Project Structure
+
 ```
 CodeBrosPlatform/
 ├── client/                # React frontend
@@ -69,6 +71,7 @@ CodeBrosPlatform/
 ---
 
 ## 📦 Prerequisites
+
 - [Node.js](https://nodejs.org/) (v18 or higher recommended)
 - [Git](https://git-scm.com/)
 
@@ -77,25 +80,27 @@ CodeBrosPlatform/
 ## 🚀 Installation & Setup
 
 1. **Clone the Repository**
+
    ```bash
-git clone https://github.com/your-username/CodeBrosPlatform.git
-cd CodeBrosPlatform
+   git clone https://github.com/your-username/CodeBrosPlatform.git
+   cd CodeBrosPlatform
    ```
 
 2. **Install Dependencies**
+
    ```bash
-npm install
+   npm install
    ```
 
 3. **Start the Development Server**
    - **Windows (recommended):**
-     ```bash
+     `bash
 dev.bat
-     ```
+     `
    - **Manual (cross-platform):**
-     ```bash
+     `bash
 set NODE_ENV=development && tsx server/index.ts
-     ```
+     `
 
 4. **Open in Browser**
    - Visit: [http://localhost:5000](http://localhost:5000)
@@ -103,6 +108,7 @@ set NODE_ENV=development && tsx server/index.ts
 ---
 
 ## 🛠️ Usage
+
 - Register or log in as a developer.
 - Create and update your profile (add skills, experience, etc.).
 - Browse/search for other developers.
@@ -113,6 +119,7 @@ set NODE_ENV=development && tsx server/index.ts
 ---
 
 ## 🔧 Available Scripts
+
 - `dev.bat` - Start development server (Windows-friendly)
 - `npm run dev` - Start development server (cross-platform)
 - `npm run build` - Build frontend for production
@@ -128,7 +135,9 @@ set NODE_ENV=development && tsx server/index.ts
 ---
 
 ## 🤝 Contributing
+
 Contributions are welcome! To get started:
+
 1. Fork the repository
 2. Create a new branch (`git checkout -b feature/your-feature`)
 3. Make your changes
@@ -141,23 +150,26 @@ Please read the [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 ---
 
 ## ❓ FAQ
+
 **Q: Is this production-ready?**
+
 > No, this is a prototype with in-memory storage. For production, integrate a persistent database.
 
 **Q: How do I reset the data?**
+
 > Restarting the server will reset all in-memory data.
 
 **Q: Can I use this as a template for my own project?**
+
 > Yes! Please credit the original repo.
 
 ---
 
 ## 📄 License
+
 This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
 You are free to use, modify, and distribute this project with attribution.
 
-
 ---
-
 
 > _If you like this project, please ⭐ the repo!_

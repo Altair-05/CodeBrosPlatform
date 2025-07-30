@@ -13,4 +13,4 @@ export default {
     '<rootDir>/client/src/**/*.{test,spec}.{ts,tsx}',
   ],
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
-}; 
+};
