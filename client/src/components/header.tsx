@@ -8,7 +8,9 @@ import {
   Search,
   Sun,
   Users,
-  BellOff
+  BellOff,
+  LogOut,
+  User
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -18,35 +20,32 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { useTheme } from "@/components/theme-provider";
 import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/contexts/auth-context";
 import { useState } from "react";
 
 interface HeaderProps {
-  currentUser?: {
-    id: number;
-    firstName: string;
-    lastName: string;
-    profileImage?: string;
-  };
   notificationCount?: number;
   onSearch?: (query: string) => void;
 }
 
 export function Header({
-  currentUser,
   notificationCount = 0,
   onSearch,
 }: HeaderProps) {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   const { theme, setTheme } = useTheme();
+  const { user, logout, isAuthenticated } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (onSearch && searchQuery.trim()) {
-      onSearch(searchQuery);
+    if (searchQuery.trim()) {
+      // Navigate to network page with search query
+      setLocation(`/network?search=${encodeURIComponent(searchQuery.trim())}`);
     }
   };
 
@@ -193,32 +192,52 @@ export function Header({
             </Button>
 
             {/* Profile Dropdown */}
-            {currentUser && (
+            {isAuthenticated && user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Avatar className="w-8 h-8 cursor-pointer ring-2 ring-gray-300 dark:ring-gray-600 hover:ring-brand-blue transition-all">
                     <AvatarImage
-                      src={currentUser.profileImage}
-                      alt={`${currentUser.firstName} ${currentUser.lastName}`}
+                      src={user.profileImage}
+                      alt={`${user.firstName} ${user.lastName}`}
                     />
                     <AvatarFallback>
-                      {currentUser.firstName[0]}
-                      {currentUser.lastName[0]}
+                      {user.firstName[0]}
+                      {user.lastName[0]}
                     </AvatarFallback>
                   </Avatar>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem asChild>
-                    <Link href={`/profile/${currentUser.id}`}>
+                    <Link href={`/profile/${user._id}`}>
+                      <User size={16} className="mr-2" />
                       View Profile
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href="/settings">Settings</Link>
+                    <Link href="/settings">
+                      Settings
+                    </Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem>Sign Out</DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={logout}>
+                    <LogOut size={16} className="mr-2" />
+                    Sign Out
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
+            ) : (
+              <div className="flex items-center space-x-2">
+                <Link href="/login">
+                  <Button variant="ghost" size="sm">
+                    Sign In
+                  </Button>
+                </Link>
+                <Link href="/register">
+                  <Button size="sm">
+                    Sign Up
+                  </Button>
+                </Link>
+              </div>
             )}
           </nav>
         </div>

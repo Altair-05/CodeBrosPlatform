@@ -1,6 +1,6 @@
 import { useParams } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { User } from "@shared/schema";
+import { User } from "@shared/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -26,7 +26,7 @@ import { useEffect } from "react";
 
 export default function Profile() {
   const { id } = useParams<{ id: string }>();
-  const userId = parseInt(id || "1");
+  const userId = id || "current";
 
   // FIX 4: Scroll to the top of the page when the component mounts or the ID changes.
   useEffect(() => {
@@ -34,7 +34,14 @@ export default function Profile() {
   }, [id]);
 
   const { data: user, isLoading } = useQuery<User>({
-    queryKey: [`/api/users/${userId}`],
+    queryKey: ["user", userId],
+    queryFn: async () => {
+      const response = await fetch(`/api/users/${userId}`);
+      if (!response.ok) {
+        throw new Error("User not found");
+      }
+      return response.json();
+    },
   });
 
   if (isLoading) {

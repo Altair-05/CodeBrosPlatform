@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Message, User } from "@shared/schema";
+import { Message, User } from "@shared/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,18 +13,14 @@ import { formatTimeAgo } from "@/lib/utils";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
-interface Conversation {
-  user: User;
-  lastMessage: Message;
-  unreadCount: number;
-}
+import { Conversation } from "@shared/types";
 
 export default function Messages() {
   const { toast } = useToast();
   const [selectedConversation, setSelectedConversation] = useState<User | null>(null);
   const [messageText, setMessageText] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const currentUserId = 1; // TODO: Get from auth context
+  const currentUserId = "current"; // TODO: Get from auth context
 
   // Fetch conversations
   const { data: conversations = [], isLoading: conversationsLoading } = useQuery<Conversation[]>({
@@ -114,7 +110,7 @@ export default function Messages() {
                       <div key={conversation.user.id}>
                         <div
                           className={`p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
-                            selectedConversation?.id === conversation.user.id
+                            selectedConversation?._id === conversation.user._id
                               ? "bg-brand-blue/10 border-r-2 border-brand-blue"
                               : ""
                           }`}

@@ -1,4 +1,4 @@
-import { User } from "@shared/schema";
+import { User } from "@shared/types";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -8,11 +8,11 @@ import { getExperienceLevelColor, getExperienceLevelLabel, getOnlineStatus } fro
 
 interface DeveloperCardProps {
   user: User;
-  currentUserId?: number;
+  currentUserId?: string;
   connectionStatus?: "none" | "pending" | "connected";
-  onConnect?: (userId: number) => void;
-  onMessage?: (userId: number) => void;
-  onViewProfile?: (userId: number) => void;
+  onConnect?: (userId: string) => void;
+  onMessage?: (userId: string) => void;
+  onViewProfile?: (userId: string) => void;
 }
 
 export function DeveloperCard({
@@ -24,23 +24,23 @@ export function DeveloperCard({
   onViewProfile,
 }: DeveloperCardProps) {
   const { color: statusColor, text: statusText } = getOnlineStatus(user.isOnline, user.lastSeen);
-  const isOwnProfile = currentUserId === user.id;
+  const isOwnProfile = currentUserId === user._id;
 
   const handleConnect = () => {
     if (onConnect && !isOwnProfile) {
-      onConnect(user.id);
+      onConnect(user._id);
     }
   };
 
   const handleMessage = () => {
     if (onMessage && !isOwnProfile) {
-      onMessage(user.id);
+      onMessage(user._id);
     }
   };
 
   const handleViewProfile = () => {
     if (onViewProfile) {
-      onViewProfile(user.id);
+      onViewProfile(user._id);
     }
   };
 

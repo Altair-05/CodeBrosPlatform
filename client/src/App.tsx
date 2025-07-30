@@ -4,11 +4,15 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
+import { AuthProvider } from "@/contexts/auth-context";
 import { Header } from "@/components/header";
 import Home from "@/pages/home";
 import Network from "@/pages/network";
 import Profile from "@/pages/profile";
 import Messages from "@/pages/messages";
+import Register from "@/pages/register";
+import Login from "@/pages/login";
+import Settings from "@/pages/settings";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -18,36 +22,32 @@ function Router() {
       <Route path="/network" component={Network} />
       <Route path="/profile/:id" component={Profile} />
       <Route path="/messages" component={Messages} />
+      <Route path="/register" component={Register} />
+      <Route path="/login" component={Login} />
+      <Route path="/settings" component={Settings} />
       <Route component={NotFound} />
     </Switch>
   );
 }
 
 function App() {
-  // TODO: Get current user from auth context
-  const currentUser = {
-    id: 1,
-    firstName: "John",
-    lastName: "Doe",
-    profileImage: "https://images.unsplash.com/photo-1536625979259-edbae645c7c3?q=80&w=688&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-  };
-
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="light" storageKey="codebros-ui-theme">
-        <TooltipProvider>
-          <div className="min-h-screen bg-background">
-            <Header 
-              currentUser={currentUser}
-              notificationCount={3}
-              onSearch={(query) => console.log("Search:", query)}
-            />
-            <main>
-              <Router />
-            </main>
-          </div>
-          <Toaster />
-        </TooltipProvider>
+        <AuthProvider>
+          <TooltipProvider>
+            <div className="min-h-screen bg-background">
+              <Header 
+                notificationCount={3}
+                onSearch={(query) => console.log("Search:", query)}
+              />
+              <main>
+                <Router />
+              </main>
+            </div>
+            <Toaster />
+          </TooltipProvider>
+        </AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );
