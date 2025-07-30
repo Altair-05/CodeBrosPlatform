@@ -351,7 +351,7 @@ export default function Register() {
                   className="rounded"
                 />
                 <Label htmlFor="openToCollaborate">
-                  I'm open to collaboration opportunities
+                  I&apos;m open to collaboration opportunities
                 </Label>
               </div>
 

@@ -32,7 +32,7 @@ interface HeaderProps {
   onSearch?: (query: string) => void;
 }
 
-export function Header({ notificationCount = 0, onSearch }: HeaderProps) {
+export function Header({ notificationCount = 0 }: HeaderProps) {
   const [location, setLocation] = useLocation();
   const { theme, setTheme } = useTheme();
   const { user, logout, isAuthenticated } = useAuth();

@@ -6,16 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
-import {
-  MapPin,
-  Calendar,
-  Globe,
-  Github,
-  Linkedin,
-  Mail,
-  MessageCircle,
-  UserPlus,
-} from 'lucide-react';
+import { Github, Linkedin, Mail, MessageCircle, UserPlus } from 'lucide-react';
 import {
   getExperienceLevelColor,
   getExperienceLevelLabel,
@@ -75,7 +66,7 @@ export default function Profile() {
                 User Not Found
               </h1>
               <p className="text-gray-600 dark:text-gray-400">
-                The user you're looking for doesn't exist.
+                The user you&apos;re looking for doesn&apos;t exist.
               </p>
             </div>
           </CardContent>

@@ -7,7 +7,6 @@ import {
   insertMessageSchema,
   updateUserSchema,
   updateConnectionStatusSchema,
-  searchUsersSchema,
 } from '@shared/mongo-schema';
 import { z } from 'zod';
 
@@ -256,6 +255,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Don't send password back to client
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { password: _, ...userWithoutPassword } = user;
 
       res.json(userWithoutPassword);

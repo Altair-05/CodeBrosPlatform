@@ -1,7 +1,4 @@
 import {
-  users,
-  connections,
-  messages,
   type User,
   type InsertUser,
   type Connection,

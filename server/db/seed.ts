@@ -4,7 +4,6 @@ import {
   InsertConnection,
   InsertMessage,
 } from '@shared/mongo-schema';
-import { ObjectId } from 'mongodb';
 
 async function seedDatabase() {
   try {
@@ -145,7 +144,7 @@ async function seedDatabase() {
       ];
 
       for (const connectionData of connections) {
-        const connection = await mongoStorage.createConnection(connectionData);
+        await mongoStorage.createConnection(connectionData);
         console.log(`Created connection between users`);
       }
 
@@ -190,7 +189,7 @@ async function seedDatabase() {
       ];
 
       for (const messageData of messages) {
-        const message = await mongoStorage.createMessage(messageData);
+        await mongoStorage.createMessage(messageData);
         console.log(`Created message`);
       }
     }
