@@ -1,19 +1,13 @@
 import type { Request, Response } from "express";
-import { MessagesService } from "../services/messages.service";
-import { insertMessageSchema } from "@shared/schema";
+import { mongoStorage } from "../db/mongo.js";
+import { insertMessageSchema } from "@shared/mongo-schema";
 
 export class MessagesController {
-  private messagesService: MessagesService;
-
-  constructor() {
-    this.messagesService = new MessagesService();
-  }
-
   async getMessagesBetweenUsers(req: Request, res: Response): Promise<void> {
     try {
-      const user1Id = parseInt(req.params.user1Id);
-      const user2Id = parseInt(req.params.user2Id);
-      const messages = await this.messagesService.getMessagesBetweenUsers(user1Id, user2Id);
+      const messages = await mongoStorage.getMessagesBetweenUsers(
+        req.params.user1Id, req.params.user2Id
+      );
       res.json(messages);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch messages" });
@@ -22,8 +16,7 @@ export class MessagesController {
 
   async getConversations(req: Request, res: Response): Promise<void> {
     try {
-      const userId = parseInt(req.params.userId);
-      const conversations = await this.messagesService.getConversations(userId);
+      const conversations = await mongoStorage.getConversations(req.params.userId);
       res.json(conversations);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch conversations" });
@@ -33,7 +26,7 @@ export class MessagesController {
   async createMessage(req: Request, res: Response): Promise<void> {
     try {
       const messageData = insertMessageSchema.parse(req.body);
-      const message = await this.messagesService.createMessage(messageData);
+      const message = await mongoStorage.createMessage(messageData);
       res.status(201).json(message);
     } catch (error) {
       res.status(400).json({ message: "Invalid message data" });
@@ -43,7 +36,7 @@ export class MessagesController {
   async markMessagesAsRead(req: Request, res: Response): Promise<void> {
     try {
       const { senderId, receiverId } = req.body;
-      await this.messagesService.markMessagesAsRead(senderId, receiverId);
+      await mongoStorage.markMessagesAsRead(senderId, receiverId);
       res.json({ message: "Messages marked as read" });
     } catch (error) {
       res.status(500).json({ message: "Failed to mark messages as read" });

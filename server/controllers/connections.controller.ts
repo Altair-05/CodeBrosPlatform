@@ -1,21 +1,14 @@
 import type { Request, Response } from "express";
-import { ConnectionService } from "../services/connection.service";
+import { mongoStorage } from "../db/mongo.js";
 import {
   insertConnectionSchema,
   updateConnectionStatusSchema
-} from "@shared/schema";
+} from "@shared/mongo-schema";
 
 export class ConnectionsController {
-  private connectionService: ConnectionService;
-
-  constructor() {
-    this.connectionService = new ConnectionService();
-  }
-
   async getConnectionsByUserId(req: Request, res: Response): Promise<void> {
     try {
-      const userId = parseInt(req.params.userId);
-      const connections = await this.connectionService.getConnectionsByUserId(userId);
+      const connections = await mongoStorage.getConnectionsByUserId(req.params.userId);
       res.json(connections);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch connections" });
@@ -24,8 +17,7 @@ export class ConnectionsController {
 
   async getPendingConnectionRequests(req: Request, res: Response): Promise<void> {
     try {
-      const userId = parseInt(req.params.userId);
-      const requests = await this.connectionService.getPendingConnectionRequests(userId);
+      const requests = await mongoStorage.getPendingConnectionRequests(req.params.userId);
       res.json(requests);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch pending requests" });
@@ -34,8 +26,7 @@ export class ConnectionsController {
 
   async getAcceptedConnections(req: Request, res: Response): Promise<void> {
     try {
-      const userId = parseInt(req.params.userId);
-      const connections = await this.connectionService.getAcceptedConnections(userId);
+      const connections = await mongoStorage.getAcceptedConnections(req.params.userId);
       res.json(connections);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch accepted connections" });
@@ -45,22 +36,25 @@ export class ConnectionsController {
   async createConnection(req: Request, res: Response): Promise<void> {
     try {
       const connectionData = insertConnectionSchema.parse(req.body);
-      const connection = await this.connectionService.createConnection(connectionData);
+      const existing = await mongoStorage.getConnection(
+        (connectionData.requesterId as any).toString(), 
+        (connectionData.receiverId as any).toString()
+      );
+      if (existing) {
+        res.status(400).json({ message: "Connection already exists" });
+        return;
+      }
+      const connection = await mongoStorage.createConnection(connectionData);
       res.status(201).json(connection);
     } catch (error) {
-      if (error instanceof Error) {
-        res.status(400).json({ message: error.message });
-      } else {
-        res.status(400).json({ message: "Invalid connection data" });
-      }
+      res.status(400).json({ message: "Invalid connection data" });
     }
   }
 
   async updateConnectionStatus(req: Request, res: Response): Promise<void> {
     try {
-      const id = parseInt(req.params.id);
       const { status } = updateConnectionStatusSchema.parse(req.body);
-      const connection = await this.connectionService.updateConnectionStatus(id, status);
+      const connection = await mongoStorage.updateConnectionStatus(req.params.id, status);
 
       if (!connection) {
         res.status(404).json({ message: "Connection not found" });

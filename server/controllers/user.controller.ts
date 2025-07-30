@@ -1,21 +1,22 @@
 import type { Request, Response } from "express";
-import { UserService } from "../services/user.service";
+import { mongoStorage } from "../db/mongo.js";
 import {
   insertUserSchema,
   updateUserSchema,
   searchUsersSchema
-} from "@shared/schema";
+} from "@shared/mongo-schema";
+import { z } from "zod";
+
+// Login schema
+const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(1),
+});
 
 export class UserController {
-  private userService: UserService;
-
-  constructor() {
-    this.userService = new UserService();
-  }
-
   async getAllUsers(req: Request, res: Response): Promise<void> {
     try {
-      const users = await this.userService.getAllUsers();
+      const users = await mongoStorage.getAllUsers();
       res.json(users);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch users" });
@@ -47,7 +48,7 @@ export class UserController {
         Object.entries(searchParams).filter(([_, v]) => v !== undefined)
       );
 
-      const users = await this.userService.searchUsers(cleanedParams);
+      const users = await mongoStorage.searchUsers(cleanedParams);
       res.json(users);
     } catch (error) {
       console.error('Search error:', error);
@@ -57,8 +58,7 @@ export class UserController {
 
   async getUserById(req: Request, res: Response): Promise<void> {
     try {
-      const id = parseInt(req.params.id);
-      const user = await this.userService.getUser(id);
+      const user = await mongoStorage.getUser(req.params.id);
       if (!user) {
         res.status(404).json({ message: "User not found" });
         return;
@@ -72,22 +72,27 @@ export class UserController {
   async createUser(req: Request, res: Response): Promise<void> {
     try {
       const userData = insertUserSchema.parse(req.body);
-      const user = await this.userService.createUser(userData);
+      const existingUsername = await mongoStorage.getUserByUsername(userData.username);
+      const existingEmail = await mongoStorage.getUserByEmail(userData.email);
+      if (existingUsername) {
+        res.status(400).json({ message: "Username already exists" });
+        return;
+      }
+      if (existingEmail) {
+        res.status(400).json({ message: "Email already exists" });
+        return;
+      }
+      const user = await mongoStorage.createUser(userData);
       res.status(201).json(user);
     } catch (error) {
-      if (error instanceof Error) {
-        res.status(400).json({ message: error.message });
-      } else {
-        res.status(400).json({ message: "Invalid user data" });
-      }
+      res.status(400).json({ message: "Invalid user data" });
     }
   }
 
   async updateUser(req: Request, res: Response): Promise<void> {
     try {
-      const id = parseInt(req.params.id);
       const updates = updateUserSchema.parse(req.body);
-      const user = await this.userService.updateUser(id, updates);
+      const user = await mongoStorage.updateUser(req.params.id, updates);
 
       if (!user) {
         res.status(404).json({ message: "User not found" });
@@ -102,12 +107,26 @@ export class UserController {
 
   async setUserOnlineStatus(req: Request, res: Response): Promise<void> {
     try {
-      const id = parseInt(req.params.id);
       const { isOnline } = req.body;
-      await this.userService.setUserOnlineStatus(id, isOnline);
+      await mongoStorage.setUserOnlineStatus(req.params.id, isOnline);
       res.json({ message: "Status updated" });
     } catch (error) {
       res.status(500).json({ message: "Failed to update status" });
+    }
+  }
+
+  async login(req: Request, res: Response): Promise<void> {
+    try {
+      const { email, password } = loginSchema.parse(req.body);
+      const user = await mongoStorage.getUserByEmail(email);
+      if (!user || user.password !== password) {
+        res.status(401).json({ message: "Invalid email or password" });
+        return;
+      }
+      const { password: _, ...userWithoutPassword } = user;
+      res.json(userWithoutPassword);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid login data" });
     }
   }
 } 
