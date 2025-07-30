@@ -1,5 +1,6 @@
-#  **ShadCN UI Configuration Documentation**
- This document provides a detailed explanation of the configuration used for setting up ShadCN UI with your project.
+# **ShadCN UI Configuration Documentation**
+
+This document provides a detailed explanation of the configuration used for setting up ShadCN UI with your project.
 
 ```json
 {
@@ -23,8 +24,11 @@
   }
 }
 ```
+
 ---
-##  $schema
+
+## $schema
+
 Type: `string`
 
 #### Description: URI to the ShadCN UI schema definition. It enables IDE auto-completion and validation.
@@ -32,7 +36,9 @@ Type: `string`
 Value: `https://ui.shadcn.com/schema.json`
 
 ---
-##  style
+
+## style
+
 Type: `string`
 
 #### Description: The design style preset used for components.
@@ -41,9 +47,10 @@ Value: `"new-york"`
 
 Usage: Selects the "New York" UI design aesthetic from ShadCN styles.
 
---- 
+---
 
-##  rsc
+## rsc
+
 Type: `boolean`
 
 Description: Indicates whether the project uses React Server Components (RSC).
@@ -52,9 +59,10 @@ Value: `false`
 
 Usage: Set to false as this project uses only client-side components.
 
---- 
+---
 
-##  tsx
+## tsx
+
 Type: `boolean`
 
 Description: Determines whether the components are written in TypeScript + JSX (.tsx).
@@ -65,39 +73,40 @@ Usage: Set to true for full TypeScript support in React components.
 
 ---
 
-##  Tailwind Configuration
+## Tailwind Configuration
+
 This section configures how Tailwind CSS integrates with the project.
 
 > config
-Type: `string`
+> Type: `string`
 
 Description: Path to the Tailwind configuration file.
 
 Value: `"tailwind.config.ts"`
 
 > css
-Type: `string`
+> Type: `string`
 
 Description: Path to the main CSS file where Tailwind directives are imported.
 
 Value: `"client/src/index.css"`
 
 > baseColor
-Type: `string`
+> Type: `string`
 
 Description: Sets the default base color theme for UI components.
 
 Value: `"neutral"`
 
 > cssVariables
-Type: `boolean`
+> Type: `boolean`
 
 Description: Enables the use of CSS variables for theming and utility customization.
 
 Value: `true`
 
 > prefix
-Type: `string`
+> Type: `string`
 
 Description: A custom prefix for Tailwind utility classes. Useful to avoid class name conflicts.
 
@@ -105,24 +114,30 @@ Value: `""` (empty string indicates no prefix used)
 
 ---
 
-##  Aliases
+## Aliases
+
 This section defines module import aliases for cleaner import paths in the project.
 
-|Alias |	Path	| Description|
-|------|------------|------------|
-|components	|`@/components`	|General React component directory|
-|utils	|`@/lib/utils`	| Utility functions|
-|ui	|`@/components/ui`	| UI-specific component library|
-|lib	|`@/lib` |	Shared logic, services, helpers, etc.|
-|hooks	|`@/hooks` |	Custom React hooks|
+| Alias      | Path              | Description                           |
+| ---------- | ----------------- | ------------------------------------- |
+| components | `@/components`    | General React component directory     |
+| utils      | `@/lib/utils`     | Utility functions                     |
+| ui         | `@/components/ui` | UI-specific component library         |
+| lib        | `@/lib`           | Shared logic, services, helpers, etc. |
+| hooks      | `@/hooks`         | Custom React hooks                    |
 
 #### These aliases help avoid long relative paths like `../../../components/Button`.
+
 ---
-## Summary  
+
+## Summary
 
 #### This configuration sets up a TSX-based, client-side React project using Tailwind CSS and ShadCN UI with the “New York” style. It includes clear path aliases and CSS variable support, making the project modular and themeable.
----
-#### For more on ShadCN setup, visit: https://ui.shadcn.com
+
 ---
 
-## Happy Coding 
+#### For more on ShadCN setup, visit: https://ui.shadcn.com
+
+---
+
+## Happy Coding

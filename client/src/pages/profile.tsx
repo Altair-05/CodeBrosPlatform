@@ -1,32 +1,22 @@
-import { useParams } from "wouter";
-import { useQuery } from "@tanstack/react-query";
-import { User } from "@shared/types";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
-import {
-  MapPin,
-  Calendar,
-  Globe,
-  Github,
-  Linkedin,
-  Mail,
-  MessageCircle,
-  UserPlus,
-} from "lucide-react";
+import { useParams } from 'wouter';
+import { useQuery } from '@tanstack/react-query';
+import { User } from '@shared/types';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Separator } from '@/components/ui/separator';
+import { Github, Linkedin, Mail, MessageCircle, UserPlus } from 'lucide-react';
 import {
   getExperienceLevelColor,
   getExperienceLevelLabel,
   getOnlineStatus,
-} from "@/lib/utils";
-import { useEffect } from "react";
-
+} from '@/lib/utils';
+import { useEffect } from 'react';
 
 export default function Profile() {
   const { id } = useParams<{ id: string }>();
-  const userId = id || "current";
+  const userId = id || 'current';
 
   // FIX 4: Scroll to the top of the page when the component mounts or the ID changes.
   useEffect(() => {
@@ -34,11 +24,11 @@ export default function Profile() {
   }, [id]);
 
   const { data: user, isLoading } = useQuery<User>({
-    queryKey: ["user", userId],
+    queryKey: ['user', userId],
     queryFn: async () => {
       const response = await fetch(`/api/users/${userId}`);
       if (!response.ok) {
-        throw new Error("User not found");
+        throw new Error('User not found');
       }
       return response.json();
     },
@@ -76,7 +66,7 @@ export default function Profile() {
                 User Not Found
               </h1>
               <p className="text-gray-600 dark:text-gray-400">
-                The user you're looking for doesn't exist.
+                The user you&apos;re looking for doesn&apos;t exist.
               </p>
             </div>
           </CardContent>
@@ -168,7 +158,7 @@ export default function Profile() {
               </CardHeader>
               <CardContent>
                 <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
-                  {user.bio || "No bio available."}
+                  {user.bio || 'No bio available.'}
                 </p>
               </CardContent>
             </Card>

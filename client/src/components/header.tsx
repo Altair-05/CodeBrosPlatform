@@ -1,4 +1,4 @@
-import { Link, useLocation } from "wouter";
+import { Link, useLocation } from 'wouter';
 import {
   Bell,
   Code,
@@ -10,36 +10,33 @@ import {
   Users,
   BellOff,
   LogOut,
-  User
-} from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+  User,
+} from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
-import { useTheme } from "@/components/theme-provider";
-import { Badge } from "@/components/ui/badge";
-import { useAuth } from "@/contexts/auth-context";
-import { useState } from "react";
+} from '@/components/ui/dropdown-menu';
+import { useTheme } from '@/components/theme-provider';
+import { Badge } from '@/components/ui/badge';
+import { useAuth } from '@/contexts/auth-context';
+import { useState } from 'react';
 
 interface HeaderProps {
   notificationCount?: number;
   onSearch?: (query: string) => void;
 }
 
-export function Header({
-  notificationCount = 0,
-  onSearch,
-}: HeaderProps) {
+export function Header({ notificationCount = 0 }: HeaderProps) {
   const [location, setLocation] = useLocation();
   const { theme, setTheme } = useTheme();
   const { user, logout, isAuthenticated } = useAuth();
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,7 +77,7 @@ export function Header({
                 placeholder="Search developers, skills, companies..."
                 className="pl-10 bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-700"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={e => setSearchQuery(e.target.value)}
               />
             </form>
           </div>
@@ -89,7 +86,7 @@ export function Header({
           <nav className="flex items-center space-x-6">
             <Link href="/">
               <Button
-                variant={isActive("/") ? "default" : "ghost"}
+                variant={isActive('/') ? 'default' : 'ghost'}
                 size="sm"
                 className="text-gray-600 dark:text-gray-300 hover:text-brand-blue"
               >
@@ -100,7 +97,7 @@ export function Header({
 
             <Link href="/network">
               <Button
-                variant={isActive("/network") ? "default" : "ghost"}
+                variant={isActive('/network') ? 'default' : 'ghost'}
                 size="sm"
                 className="text-gray-600 dark:text-gray-300 hover:text-brand-blue"
               >
@@ -111,7 +108,7 @@ export function Header({
 
             <Link href="/messages">
               <Button
-                variant={isActive("/messages") ? "default" : "ghost"}
+                variant={isActive('/messages') ? 'default' : 'ghost'}
                 size="sm"
                 className="text-gray-600 dark:text-gray-300 hover:text-brand-blue"
               >
@@ -185,10 +182,10 @@ export function Header({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+              onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
               className="text-gray-600 dark:text-gray-300"
             >
-              {theme === "light" ? <Moon size={16} /> : <Sun size={16} />}
+              {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
             </Button>
 
             {/* Profile Dropdown */}
@@ -214,9 +211,7 @@ export function Header({
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href="/settings">
-                      Settings
-                    </Link>
+                    <Link href="/settings">Settings</Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={logout}>
@@ -233,9 +228,7 @@ export function Header({
                   </Button>
                 </Link>
                 <Link href="/register">
-                  <Button size="sm">
-                    Sign Up
-                  </Button>
+                  <Button size="sm">Sign Up</Button>
                 </Link>
               </div>
             )}
