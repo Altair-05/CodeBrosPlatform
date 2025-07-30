@@ -1,6 +1,7 @@
 // Shared types for frontend and backend compatibility
 export interface User {
-  _id: string;
+  // DELETE THIS LINE: _id: string;
+  id: number; // ADD THIS LINE - The ID is a number from the API (as per Drizzle schema)
   username: string;
   email: string;
   password: string;
@@ -19,9 +20,10 @@ export interface User {
 }
 
 export interface Connection {
-  _id: string;
-  requesterId: string;
-  receiverId: string;
+  // DELETE THIS LINE: _id: string;
+  id: number; // ADD THIS LINE
+  requesterId: number; // CHANGE TO number
+  receiverId: number; // CHANGE TO number
   status: "pending" | "accepted" | "declined";
   message?: string;
   createdAt: Date;
@@ -29,9 +31,10 @@ export interface Connection {
 }
 
 export interface Message {
-  _id: string;
-  senderId: string;
-  receiverId: string;
+  // DELETE THIS LINE: _id: string;
+  id: number; // ADD THIS LINE
+  senderId: number; // CHANGE TO number
+  receiverId: number; // CHANGE TO number
   content: string;
   isRead: boolean;
   createdAt: Date;
@@ -59,15 +62,15 @@ export interface InsertUser {
 }
 
 export interface InsertConnection {
-  requesterId: string;
-  receiverId: string;
+  requesterId: number; // CHANGE TO number
+  receiverId: number; // CHANGE TO number
   status: "pending" | "accepted" | "declined";
   message?: string;
 }
 
 export interface InsertMessage {
-  senderId: string;
-  receiverId: string;
+  senderId: number; // CHANGE TO number
+  receiverId: number; // CHANGE TO number
   content: string;
 }
 
@@ -91,4 +94,4 @@ export interface SearchUsers {
   skills?: string[];
   openToCollaborate?: boolean;
   isOnline?: boolean;
-} 
+}

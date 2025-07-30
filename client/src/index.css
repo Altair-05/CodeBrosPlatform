@@ -23,14 +23,6 @@
   --destructive-foreground: hsl(0, 0%, 98%);
   --ring: hsl(240, 5%, 64.9%);
   --radius: 0.5rem;
-  
-  /* Custom brand colors */
-  --brand-blue: hsl(217, 91%, 60%);
-  --brand-blue-dark: hsl(217, 91%, 45%);
-  --brand-emerald: hsl(158, 64%, 52%);
-  --brand-emerald-dark: hsl(158, 64%, 42%);
-  --brand-amber: hsl(43, 96%, 56%);
-  --brand-amber-dark: hsl(43, 96%, 46%);
 }
 
 .dark {
@@ -44,7 +36,7 @@
   --card-foreground: hsl(0, 0%, 98%);
   --border: hsl(240, 3.7%, 15.9%);
   --input: hsl(240, 3.7%, 15.9%);
-  --primary: hsl(217, 91%, 60%);
+  --primary: hsl(217, 91%, 65%);
   --primary-foreground: hsl(0, 0%, 98%);
   --secondary: hsl(240, 3.7%, 15.9%);
   --secondary-foreground: hsl(0, 0%, 98%);
@@ -53,14 +45,6 @@
   --destructive: hsl(0, 62.8%, 30.6%);
   --destructive-foreground: hsl(0, 0%, 98%);
   --ring: hsl(240, 4.9%, 83.9%);
-  
-  /* Custom brand colors for dark mode */
-  --brand-blue: hsl(217, 91%, 65%);
-  --brand-blue-dark: hsl(217, 91%, 50%);
-  --brand-emerald: hsl(158, 64%, 57%);
-  --brand-emerald-dark: hsl(158, 64%, 47%);
-  --brand-amber: hsl(43, 96%, 61%);
-  --brand-amber-dark: hsl(43, 96%, 51%);
 }
 
 @layer base {
@@ -71,71 +55,5 @@
   body {
     @apply bg-background text-foreground font-sans;
     font-feature-settings: "rlig" 1, "calt" 1;
-  }
-}
-
-@layer utilities {
-  .text-brand-blue {
-    color: hsl(var(--brand-blue));
-  }
-  
-  .text-brand-blue-dark {
-    color: hsl(var(--brand-blue-dark));
-  }
-  
-  .text-brand-emerald {
-    color: hsl(var(--brand-emerald));
-  }
-  
-  .text-brand-emerald-dark {
-    color: hsl(var(--brand-emerald-dark));
-  }
-  
-  .text-brand-amber {
-    color: hsl(var(--brand-amber));
-  }
-  
-  .text-brand-amber-dark {
-    color: hsl(var(--brand-amber-dark));
-  }
-  
-  .bg-brand-blue {
-    background-color: hsl(var(--brand-blue));
-  }
-  
-  .bg-brand-blue-dark {
-    background-color: hsl(var(--brand-blue-dark));
-  }
-  
-  .bg-brand-emerald {
-    background-color: hsl(var(--brand-emerald));
-  }
-  
-  .bg-brand-emerald-dark {
-    background-color: hsl(var(--brand-emerald-dark));
-  }
-  
-  .bg-brand-amber {
-    background-color: hsl(var(--brand-amber));
-  }
-  
-  .bg-brand-amber-dark {
-    background-color: hsl(var(--brand-amber-dark));
-  }
-  
-  .border-brand-blue {
-    border-color: hsl(var(--brand-blue));
-  }
-  
-  .hover\:bg-brand-blue-dark:hover {
-    background-color: hsl(var(--brand-blue-dark));
-  }
-  
-  .hover\:text-brand-blue:hover {
-    color: hsl(var(--brand-blue));
-  }
-  
-  .focus\:ring-brand-blue:focus {
-    --tw-ring-color: hsl(var(--brand-blue));
   }
 }

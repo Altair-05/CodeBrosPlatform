@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { X, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
 
 const SKILLS_OPTIONS = [
   "JavaScript", "TypeScript", "React", "Vue", "Angular", "Node.js", "Python", "Java", "C#", "C++",
@@ -22,6 +23,8 @@ const SKILLS_OPTIONS = [
 export default function Register() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
+  const { login } = useAuth();
+
   const [formData, setFormData] = useState({
     username: "",
     email: "",
@@ -45,20 +48,30 @@ export default function Register() {
         },
         body: JSON.stringify(userData),
       });
-      
+
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.message || 'Registration failed');
       }
-      
+
       return response.json();
     },
-    onSuccess: () => {
+    onSuccess: async (_, variables) => {
       toast({
         title: "Success!",
         description: "Your account has been created successfully!",
       });
-      setLocation('/');
+      const loggedIn = await login(variables.email, variables.password);
+      if (loggedIn) {
+        setLocation('/');
+      } else {
+        toast({
+          title: "Auto-login failed",
+          description: "Please log in with your new credentials.",
+          variant: "destructive",
+        });
+        setLocation('/login');
+      }
     },
     onError: (error: any) => {
       toast({
@@ -79,14 +92,14 @@ export default function Register() {
   };
 
   const addSkill = () => {
-    if (newSkill.trim() && !formData.skills.includes(newSkill.trim())) {
-      setFormData(prev => ({ ...prev, skills: [...prev.skills, newSkill.trim()] }));
+    if (newSkill.trim() && !(formData.skills as any).includes(newSkill.trim())) {
+      setFormData(prev => ({ ...prev, skills: [...(prev.skills as any), newSkill.trim()] }));
       setNewSkill("");
     }
   };
 
   const removeSkill = (skillToRemove: string) => {
-    setFormData(prev => ({ ...prev, skills: prev.skills.filter(skill => skill !== skillToRemove) }));
+    setFormData(prev => ({ ...prev, skills: (prev.skills as any).filter((skill: string) => skill !== skillToRemove) }));
   };
 
   return (
@@ -174,7 +187,7 @@ export default function Register() {
                 <Label htmlFor="experienceLevel">Experience Level *</Label>
                 <Select
                   value={formData.experienceLevel}
-                  onValueChange={(value: "beginner" | "intermediate" | "professional") => 
+                  onValueChange={(value: "beginner" | "intermediate" | "professional") =>
                     handleInputChange("experienceLevel", value)
                   }
                 >
@@ -215,7 +228,7 @@ export default function Register() {
                     <Plus size={16} />
                   </Button>
                 </div>
-                
+
                 {/* Selected Skills */}
                 <div className="flex flex-wrap gap-2 mb-3">
                   {formData.skills.map((skill) => (
@@ -286,7 +299,7 @@ export default function Register() {
                 <button
                   type="button"
                   onClick={() => setLocation('/')}
-                  className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
+                  className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
                 >
                   ← Back to Home
                 </button>
@@ -297,4 +310,4 @@ export default function Register() {
       </div>
     </div>
   );
-} 
+}

@@ -1,6 +1,6 @@
 import { useParams } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { User } from "@shared/types";
+import { User, Connection } from "@shared/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +15,7 @@ import {
   Mail,
   MessageCircle,
   UserPlus,
+  Check,
 } from "lucide-react";
 import {
   getExperienceLevelColor,
@@ -22,27 +23,128 @@ import {
   getOnlineStatus,
 } from "@/lib/utils";
 import { useEffect } from "react";
-
+import { useConnectionActions } from "@/hooks/use-connection-actions";
+import { useConnectionStatus } from "@/hooks/use-connection-status";
+import { ConnectionModal } from "@/components/connection-modal";
 
 export default function Profile() {
   const { id } = useParams<{ id: string }>();
-  const userId = id || "current";
+  const profileUserId = id;
 
-  // FIX 4: Scroll to the top of the page when the component mounts or the ID changes.
+  const {
+    openConnectionModal,
+    submitConnectionRequest,
+    showConnectionModal,
+    selectedUserForModal,
+    closeConnectionModal,
+    isSendingRequest,
+  } = useConnectionActions();
+
   useEffect(() => {
     window.scrollTo(0, 0);
-  }, [id]);
+  }, [profileUserId]);
 
-  const { data: user, isLoading } = useQuery<User>({
-    queryKey: ["user", userId],
+  // Fetch the profile user's data
+  const { data: user, isLoading: isLoadingUser, isError } = useQuery<User>({
+    queryKey: ["user", profileUserId],
     queryFn: async () => {
-      const response = await fetch(`/api/users/${userId}`);
+      const response = await fetch(`/api/users/${profileUserId}`);
       if (!response.ok) {
         throw new Error("User not found");
       }
       return response.json();
     },
+    enabled: !!profileUserId,
   });
+
+  // Use the connection status hook
+  const { connectionStatus, isLoading: isLoadingConnectionStatus } = useConnectionStatus(user);
+
+  // Fetch accepted connections for the profiled user to display the count
+  const { data: profileUserAcceptedConnections = [] } = useQuery<Connection[]>({
+    queryKey: ["profileUserAcceptedConnections", profileUserId],
+    queryFn: async () => {
+      if (!profileUserId) return [];
+      const response = await fetch(`/api/connections/accepted/${profileUserId}`);
+      if (!response.ok) {
+        return [];
+      }
+      return response.json();
+    },
+    enabled: !!profileUserId,
+  });
+
+  const handleConnectClick = () => {
+    console.log("🔥 Connect button clicked!");
+    console.log("📊 Current state:", {
+      user: user?.firstName + " " + user?.lastName,
+      connectionStatus,
+      showConnectionModal,
+      selectedUserForModal: selectedUserForModal?.firstName + " " + selectedUserForModal?.lastName
+    });
+    
+    if (user && connectionStatus === "none") {
+      console.log("✅ Calling openConnectionModal with user:", user);
+      openConnectionModal(user);
+    } else {
+      console.log("❌ Cannot open modal - conditions not met:", {
+        hasUser: !!user,
+        connectionStatus
+      });
+    }
+  };
+
+  const renderConnectionButton = () => {
+    if (connectionStatus === "self") {
+      return (
+        <Button 
+          variant="secondary"
+          className="cursor-not-allowed"
+          disabled
+        >
+          Viewing Your Profile
+        </Button>
+      );
+    } else if (connectionStatus === "connected") {
+      return (
+        <Button variant="default">
+          <MessageCircle size={16} className="mr-2" />
+          Message
+        </Button>
+      );
+    } else if (connectionStatus === "pending") {
+      return (
+        <Button
+          variant="secondary"
+          disabled
+          className="cursor-not-allowed"
+        >
+          <Check size={16} className="mr-2" />
+          Pending
+        </Button>
+      );
+    } else {
+      return (
+        <Button
+          variant="default"
+          onClick={handleConnectClick}
+          disabled={isSendingRequest}
+        >
+          {isSendingRequest ? (
+            'Connecting...'
+          ) : (
+            <>
+              <UserPlus size={16} className="mr-2" />
+              Connect
+            </>
+          )}
+        </Button>
+      );
+    }
+  };
+
+  // Combine loading states
+  const isLoading = isLoadingUser || isLoadingConnectionStatus;
 
   if (isLoading) {
     return (
@@ -66,7 +168,7 @@ export default function Profile() {
     );
   }
 
-  if (!user) {
+  if (isError || !user) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <Card className="w-full max-w-md mx-4">
@@ -76,7 +178,7 @@ export default function Profile() {
                 User Not Found
               </h1>
               <p className="text-gray-600 dark:text-gray-400">
-                The user you're looking for doesn't exist.
+                The user you're looking for doesn't exist or an error occurred.
               </p>
             </div>
           </CardContent>
@@ -85,7 +187,6 @@ export default function Profile() {
     );
   }
 
-  // FIX 1: Safely handle potential null values from the user object.
   const { color: statusColor, text: statusText } = getOnlineStatus(
     user.isOnline ?? false,
     user.lastSeen ?? undefined
@@ -99,7 +200,6 @@ export default function Profile() {
           <CardContent className="p-8">
             <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-6">
               <Avatar className="w-24 h-24">
-                {/* FIX 2: Ensure profileImage is not null before passing to src. */}
                 <AvatarImage
                   src={user.profileImage ?? undefined}
                   alt={`${user.firstName} ${user.lastName}`}
@@ -122,14 +222,7 @@ export default function Profile() {
                   </div>
 
                   <div className="flex space-x-3 mt-4 sm:mt-0">
-                    <Button className="bg-brand-blue text-white hover:bg-brand-blue-dark">
-                      <MessageCircle size={16} className="mr-2" />
-                      Message
-                    </Button>
-                    <Button variant="outline">
-                      <UserPlus size={16} className="mr-2" />
-                      Connect
-                    </Button>
+                    {renderConnectionButton()}
                   </div>
                 </div>
 
@@ -159,9 +252,7 @@ export default function Profile() {
         </Card>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
-            {/* About */}
             <Card>
               <CardHeader>
                 <CardTitle>About</CardTitle>
@@ -173,14 +264,12 @@ export default function Profile() {
               </CardContent>
             </Card>
 
-            {/* Skills */}
             <Card>
               <CardHeader>
                 <CardTitle>Skills & Technologies</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
-                  {/* FIX 3: Check if user.skills exists before trying to access it. */}
                   {user.skills && user.skills.length > 0 ? (
                     user.skills.map((skill, index) => (
                       <Badge
@@ -200,7 +289,6 @@ export default function Profile() {
               </CardContent>
             </Card>
 
-            {/* Activity Feed */}
             <Card>
               <CardHeader>
                 <CardTitle>Recent Activity</CardTitle>
@@ -245,9 +333,7 @@ export default function Profile() {
             </Card>
           </div>
 
-          {/* Sidebar */}
           <div className="space-y-6">
-            {/* Contact Info */}
             <Card>
               <CardHeader>
                 <CardTitle>Contact Information</CardTitle>
@@ -262,19 +348,20 @@ export default function Profile() {
                 <div className="flex items-center space-x-3">
                   <Github size={16} className="text-gray-400" />
                   <span className="text-sm text-gray-600 dark:text-gray-400">
-                    @{user.username}
+                    {user.username}
                   </span>
                 </div>
-                <div className="flex items-center space-x-3">
-                  <Linkedin size={16} className="text-gray-400" />
-                  <span className="text-sm text-gray-600 dark:text-gray-400">
-                    /in/{user.username}
-                  </span>
-                </div>
+                {user.username && (
+                  <div className="flex items-center space-x-3">
+                    <Linkedin size={16} className="text-gray-400" />
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                      /in/{user.username}
+                    </span>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
-            {/* Statistics */}
             <Card>
               <CardHeader>
                 <CardTitle>Statistics</CardTitle>
@@ -285,7 +372,7 @@ export default function Profile() {
                     Connections
                   </span>
                   <span className="font-semibold text-gray-900 dark:text-white">
-                    42
+                    {profileUserAcceptedConnections.length}
                   </span>
                 </div>
                 <Separator />
@@ -309,7 +396,6 @@ export default function Profile() {
               </CardContent>
             </Card>
 
-            {/* Mutual Connections */}
             <Card>
               <CardHeader>
                 <CardTitle>Mutual Connections</CardTitle>
@@ -341,6 +427,20 @@ export default function Profile() {
           </div>
         </div>
       </div>
+
+      {/* Connection Modal */}
+      {console.log("🎭 Modal render check:", {
+        showConnectionModal,
+        selectedUserForModal: selectedUserForModal?.firstName + " " + selectedUserForModal?.lastName,
+        isSendingRequest
+      })}
+      <ConnectionModal
+        isOpen={showConnectionModal}
+        onClose={closeConnectionModal}
+        targetUser={selectedUserForModal}
+        onSendRequest={submitConnectionRequest}
+        isLoading={isSendingRequest}
+      />
     </div>
   );
 }

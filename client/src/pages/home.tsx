@@ -1,16 +1,31 @@
+import React, { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { User } from "@shared/types";
+import { User, Connection } from "@shared/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { DeveloperCard } from "@/components/developer-card";
 import { Users, Briefcase, Handshake } from "lucide-react";
-import { Link, useLocation } from "wouter"; // Import useLocation
+import { Link, useLocation } from "wouter";
+import { useAuth } from "@/hooks/use-auth";
+import { useConnectionActions } from "@/hooks/use-connection-actions";
+import { ConnectionModal } from "@/components/connection-modal";
+
+type ConnectionStatus = "none" | "pending" | "connected";
 
 export default function Home() {
-  const [, setLocation] = useLocation(); // Get the setLocation function
+  const [, setLocation] = useLocation();
+  const { currentUserId, isLoadingAuth } = useAuth();
+  const {
+    openConnectionModal,
+    submitConnectionRequest,
+    showConnectionModal,
+    selectedUserForModal,
+    closeConnectionModal,
+    isSendingRequest,
+  } = useConnectionActions();
+
   const { data: users = [], isLoading } = useQuery<User[]>({
     queryKey: ["/api/users"],
-    // A simple fetch function to get all users
     queryFn: async () => {
       const response = await fetch('/api/users');
       if (!response.ok) {
@@ -20,24 +35,76 @@ export default function Home() {
     }
   });
 
+  // Fetch current user's connections to determine connection status
+  const { data: currentUserConnections = [], isLoading: isLoadingConnections } = useQuery<Connection[]>({
+    queryKey: ["currentUserConnections", currentUserId],
+    queryFn: async () => {
+      if (!currentUserId) return [];
+      const response = await fetch(`/api/connections/user/${currentUserId}`, {
+        credentials: "include"
+      });
+      if (!response.ok) {
+        return [];
+      }
+      return response.json();
+    },
+    enabled: !!currentUserId && !isLoadingAuth,
+  });
+
+  // Calculate connection status for each user
+  const getConnectionStatus = useMemo(() => {
+    return (targetUser: User): ConnectionStatus => {
+      if (!currentUserId || !targetUser) return "none";
+      if (currentUserId === targetUser.id) return "none"; // Self handled in DeveloperCard
+
+      const hasPendingRequestToUser = currentUserConnections.some(
+        (conn) =>
+          conn.requesterId === currentUserId &&
+          conn.receiverId === targetUser.id &&
+          conn.status === "pending"
+      );
+
+      const hasPendingRequestFromUser = currentUserConnections.some(
+        (conn) =>
+          conn.requesterId === targetUser.id &&
+          conn.receiverId === currentUserId &&
+          conn.status === "pending"
+      );
+
+      const areConnected = currentUserConnections.some(
+        (conn) =>
+          ((conn.requesterId === currentUserId &&
+            conn.receiverId === targetUser.id) ||
+            (conn.requesterId === targetUser.id &&
+              conn.receiverId === currentUserId)) &&
+          conn.status === "accepted"
+      );
+
+      if (areConnected) return "connected";
+      if (hasPendingRequestToUser || hasPendingRequestFromUser) return "pending";
+      return "none";
+    };
+  }, [currentUserId, currentUserConnections]);
+
   const { data: stats } = useQuery({
-    queryKey: ["/api/stats", users.length], // Add users.length to dependency array
+    queryKey: ["/api/stats", users.length],
     queryFn: () => ({
       totalUsers: users.length,
-      activeProjects: 156, // Placeholder
-      connections: 1293, // Placeholder
+      activeProjects: 156,
+      connections: 1293,
     }),
-    enabled: !isLoading, // Only run this query when users have been fetched
+    enabled: !isLoading,
   });
 
   const featuredUsers = users.slice(0, 4);
-  
-  // Handler to navigate to a user's profile
-  const handleViewProfile = (userId: string) => {
+
+  const handleViewProfile = (userId: number) => {
     setLocation(`/profile/${userId}`);
   };
 
-  if (isLoading) {
+  const isLoadingData = isLoading || isLoadingConnections;
+
+  if (isLoadingData) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -144,12 +211,12 @@ export default function Home() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               {featuredUsers.map((user) => (
                 <DeveloperCard
-                  key={user._id}
+                  key={user.id}
                   user={user}
-                  currentUserId="current" // TODO: Get from auth context
-                  onConnect={(userId) => console.log("Connect to", userId)}
+                  currentUserId={currentUserId ?? undefined}
+                  connectionStatus={getConnectionStatus(user)}
+                  onConnect={openConnectionModal}
                   onMessage={(userId) => console.log("Message", userId)}
-                  // FIX: Replaced console.log with the navigation handler
                   onViewProfile={handleViewProfile}
                 />
               ))}
@@ -157,6 +224,17 @@ export default function Home() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Connection Modal */}
+      {selectedUserForModal && (
+        <ConnectionModal
+          isOpen={showConnectionModal}
+          onClose={closeConnectionModal}
+          targetUser={selectedUserForModal}
+          onSendRequest={submitConnectionRequest}
+          isLoading={isSendingRequest}
+        />
+      )}
     </div>
   );
 }

@@ -1,3 +1,4 @@
+
 # CodeBros Platform API Endpoints
 This document outlines the API endpoints used in the CodeBros Developer Networking Platform, based on the server/routes.ts file.
 
@@ -182,4 +183,4 @@ These endpoints handle messaging functionality between connected users.
 
 - Response (Success): 200 OK with a success message.
 
-- Response (Error): 500 Internal Server Error if marking fails.
+- Response (Error): 500 Internal Server Error if marking fails.

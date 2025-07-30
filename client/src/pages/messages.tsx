@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Message, User } from "@shared/types";
+import { Message, User, Conversation as ConversationType } from "@shared/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,46 +12,77 @@ import { Send, Search } from "lucide-react";
 import { formatTimeAgo } from "@/lib/utils";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
 
-import { Conversation } from "@shared/types";
+// Corrected import path for MessageDisplay component
+import { MessageDisplay } from "@/components/ui/message-display";
+
 
 export default function Messages() {
   const { toast } = useToast();
+  const { currentUserId, isLoadingAuth } = useAuth();
   const [selectedConversation, setSelectedConversation] = useState<User | null>(null);
   const [messageText, setMessageText] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const currentUserId = "current"; // TODO: Get from auth context
 
-  // Fetch conversations
-  const { data: conversations = [], isLoading: conversationsLoading } = useQuery<Conversation[]>({
-    queryKey: [`/api/messages/conversations/${currentUserId}`],
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Fetch conversations for the current user
+  const { data: conversations = [], isLoading: conversationsLoading } = useQuery<ConversationType[]>({
+    queryKey: ["conversations", currentUserId],
+    queryFn: async () => {
+      const response = await fetch(`/api/messages/conversations/${currentUserId}`); // currentUserId is string for path
+      if (!response.ok) {
+        return [];
+      }
+      return response.json();
+    },
+    enabled: !!currentUserId && !isLoadingAuth,
   });
 
-  // Fetch messages for selected conversation
+  // Fetch messages for the selected conversation
   const { data: messages = [], isLoading: messagesLoading } = useQuery<Message[]>({
-    queryKey: [`/api/messages/conversation/${currentUserId}/${selectedConversation?.id}`],
-    enabled: !!selectedConversation,
+    queryKey: ["messages", currentUserId, selectedConversation?.id], // selectedConversation.id is number
+    queryFn: async () => {
+      if (!currentUserId || !selectedConversation) return [];
+      // API expects number IDs for path parameters, so convert currentUserId
+      const response = await fetch(`/api/messages/conversation/${Number(currentUserId)}/${selectedConversation.id}`); // selectedConversation.id is number
+      if (!response.ok) {
+        return [];
+      }
+      return response.json();
+    },
+    enabled: !!currentUserId && !!selectedConversation,
   });
+
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]);
 
   // Send message mutation
   const sendMessageMutation = useMutation({
     mutationFn: async ({ receiverId, content }: { receiverId: number; content: string }) => {
+      if (!currentUserId) {
+        throw new Error("Sender ID not available.");
+      }
       const response = await apiRequest("POST", "/api/messages", {
-        senderId: currentUserId,
-        receiverId,
-        content,
+        senderId: Number(currentUserId), // Convert currentUserId to number
+        receiverId: receiverId, // receiverId is number
+        content: content,
       });
       return response.json();
     },
     onSuccess: () => {
       setMessageText("");
-      queryClient.invalidateQueries({ queryKey: [`/api/messages/conversation`] });
-      queryClient.invalidateQueries({ queryKey: [`/api/messages/conversations`] });
+      queryClient.invalidateQueries({ queryKey: ["conversations"] });
+      queryClient.invalidateQueries({ queryKey: ["messages"] });
     },
-    onError: () => {
+    onError: (error) => {
       toast({
         title: "Error",
-        description: "Failed to send message. Please try again.",
+        description: error.message || "Failed to send message. Please try again.",
         variant: "destructive",
       });
     },
@@ -62,7 +93,7 @@ export default function Messages() {
     if (!selectedConversation || !messageText.trim()) return;
 
     sendMessageMutation.mutate({
-      receiverId: selectedConversation.id,
+      receiverId: selectedConversation.id, // selectedConversation.id is number
       content: messageText.trim(),
     });
   };
@@ -73,11 +104,34 @@ export default function Messages() {
       .includes(searchQuery.toLowerCase())
   );
 
+  if (isLoadingAuth) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <p className="text-xl text-gray-500 dark:text-gray-400">Loading authentication...</p>
+      </div>
+    );
+  }
+
+  if (!currentUserId) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <Card className="w-full max-w-md mx-4">
+          <CardContent className="pt-6 text-center">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">Access Denied</h1>
+            <p className="text-gray-600 dark:text-gray-400">
+              Please log in to view your messages.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 h-[calc(100vh-200px)]">
-          
+
           {/* Conversations List */}
           <Card className="lg:col-span-1">
             <CardHeader>
@@ -107,10 +161,10 @@ export default function Messages() {
                 ) : (
                   <div className="space-y-1">
                     {filteredConversations.map((conversation, index) => (
-                      <div key={conversation.user.id}>
+                      <div key={conversation.user.id}> {/* Uses conversation.user.id */}
                         <div
                           className={`p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
-                            selectedConversation?._id === conversation.user._id
+                            selectedConversation?.id === conversation.user.id // Uses .id
                               ? "bg-brand-blue/10 border-r-2 border-brand-blue"
                               : ""
                           }`}
@@ -118,9 +172,9 @@ export default function Messages() {
                         >
                           <div className="flex items-start space-x-3">
                             <Avatar className="w-10 h-10">
-                              <AvatarImage 
-                                src={conversation.user.profileImage} 
-                                alt={`${conversation.user.firstName} ${conversation.user.lastName}`} 
+                              <AvatarImage
+                                src={conversation.user.profileImage ?? undefined}
+                                alt={`${conversation.user.firstName} ${conversation.user.lastName}`}
                               />
                               <AvatarFallback>
                                 {conversation.user.firstName[0]}{conversation.user.lastName[0]}
@@ -143,7 +197,7 @@ export default function Messages() {
                                 </div>
                               </div>
                               <p className="text-sm text-gray-600 dark:text-gray-400 truncate mt-1">
-                                {conversation.lastMessage.senderId === currentUserId ? "You: " : ""}
+                                {Number(currentUserId!) === conversation.lastMessage.senderId ? "You: " : ""} {/* Uses senderId directly */}
                                 {conversation.lastMessage.content}
                               </p>
                             </div>
@@ -166,9 +220,9 @@ export default function Messages() {
                 <CardHeader className="border-b">
                   <div className="flex items-center space-x-3">
                     <Avatar className="w-10 h-10">
-                      <AvatarImage 
-                        src={selectedConversation.profileImage} 
-                        alt={`${selectedConversation.firstName} ${selectedConversation.lastName}`} 
+                      <AvatarImage
+                        src={selectedConversation.profileImage ?? undefined}
+                        alt={`${selectedConversation.firstName} ${selectedConversation.lastName}`}
                       />
                       <AvatarFallback>
                         {selectedConversation.firstName[0]}{selectedConversation.lastName[0]}
@@ -203,32 +257,14 @@ export default function Messages() {
                     ) : (
                       <div className="space-y-4">
                         {messages.map((message) => (
-                          <div
-                            key={message.id}
-                            className={`flex ${
-                              message.senderId === currentUserId ? "justify-end" : "justify-start"
-                            }`}
-                          >
-                            <div
-                              className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                                message.senderId === currentUserId
-                                  ? "bg-brand-blue text-white"
-                                  : "bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white"
-                              }`}
-                            >
-                              <p className="text-sm">{message.content}</p>
-                              <p
-                                className={`text-xs mt-1 ${
-                                  message.senderId === currentUserId
-                                    ? "text-blue-100"
-                                    : "text-gray-500 dark:text-gray-400"
-                                }`}
-                              >
-                                {formatTimeAgo(message.createdAt)}
-                              </p>
-                            </div>
-                          </div>
+                          <MessageDisplay
+                            key={message.id} // Uses message.id
+                            message={message}
+                            isCurrentUser={Number(currentUserId!) === message.senderId} // Uses senderId directly
+                            senderProfile={Number(currentUserId!) !== message.senderId ? selectedConversation : undefined}
+                          />
                         ))}
+                        <div ref={messagesEndRef} />
                       </div>
                     )}
                   </ScrollArea>

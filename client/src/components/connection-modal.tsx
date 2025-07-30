@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { User } from "@shared/schema";
+import { User } from "@shared/types";
 import {
   Dialog,
   DialogContent,
@@ -15,7 +15,7 @@ interface ConnectionModalProps {
   isOpen: boolean;
   onClose: () => void;
   targetUser: User | null;
-  onSendRequest: (userId: number, message?: string) => void;
+  onSendRequest: (targetUser: User, message?: string) => void;
   isLoading?: boolean;
 }
 
@@ -27,13 +27,14 @@ export function ConnectionModal({
   isLoading = false,
 }: ConnectionModalProps) {
   const [message, setMessage] = useState("");
+  const maxMessageLength = 500;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (targetUser) {
-      onSendRequest(targetUser.id, message.trim() || undefined);
+    if (targetUser && message.length <= maxMessageLength) {
+      onSendRequest(targetUser, message.trim() || undefined);
       setMessage("");
-      onClose();
+      // onClose() is now handled by the hook's onSuccess/onError for consistency
     }
   };
 
@@ -42,8 +43,18 @@ export function ConnectionModal({
     onClose();
   };
 
+  // Safe avatar initials generation
+  const getInitials = (firstName: string, lastName: string) => {
+    const firstInitial = firstName?.trim()?.[0]?.toUpperCase() || '';
+    const lastInitial = lastName?.trim()?.[0]?.toUpperCase() || '';
+    return `${firstInitial}${lastInitial}`;
+  };
+
   if (!targetUser) return null;
 
+  const isMessageTooLong = message.length > maxMessageLength;
+  console.log("Modal State:", { isLoading, isMessageTooLong });
+  
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-md">
@@ -54,16 +65,23 @@ export function ConnectionModal({
         <div className="space-y-4">
           <div className="flex items-center space-x-4">
             <Avatar className="w-12 h-12">
-              <AvatarImage src={targetUser.profileImage} alt={`${targetUser.firstName} ${targetUser.lastName}`} />
+              <AvatarImage 
+                src={targetUser.profileImage ?? undefined} 
+                alt={`${targetUser.firstName} ${targetUser.lastName}`} 
+              />
               <AvatarFallback>
-                {targetUser.firstName[0]}{targetUser.lastName[0]}
+                {getInitials(targetUser.firstName, targetUser.lastName)}
               </AvatarFallback>
             </Avatar>
             <div>
               <h4 className="font-medium text-gray-900 dark:text-white">
                 {targetUser.firstName} {targetUser.lastName}
               </h4>
-              <p className="text-sm text-gray-600 dark:text-gray-400">{targetUser.title}</p>
+              {targetUser.title && (
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  {targetUser.title}
+                </p>
+              )}
             </div>
           </div>
 
@@ -76,25 +94,39 @@ export function ConnectionModal({
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 rows={3}
-                className="mt-1"
+                className={`mt-1 ${isMessageTooLong ? 'border-red-500 focus:border-red-500' : ''}`}
+                aria-describedby={isMessageTooLong ? "message-error" : "message-counter"}
               />
+              <div className="flex justify-between items-center mt-1">
+                <p 
+                  id="message-counter" 
+                  className={`text-xs ${isMessageTooLong ? 'text-red-500' : 'text-gray-500'}`}
+                >
+                  {message.length}/{maxMessageLength} characters
+                </p>
+                {isMessageTooLong && (
+                  <p id="message-error" className="text-xs text-red-500">
+                    Message is too long
+                  </p>
+                )}
+              </div>
             </div>
 
-            <div className="flex space-x-3">
-              <Button
-                type="submit"
-                disabled={isLoading}
-                className="flex-1 bg-brand-blue text-white hover:bg-brand-blue-dark"
-              >
-                {isLoading ? "Sending..." : "Send Request"}
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleClose}
+            <div className="flex justify-end gap-2 mt-4">
+              <Button 
+                type="button" 
+                variant="ghost" 
+                onClick={handleClose} 
                 disabled={isLoading}
               >
                 Cancel
+              </Button>
+              <Button 
+                type="submit" 
+                variant="default"
+                disabled={isLoading || isMessageTooLong}
+              >
+                {isLoading ? "Sending..." : "Send Request"}
               </Button>
             </div>
           </form>
