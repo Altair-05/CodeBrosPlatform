@@ -8,11 +8,11 @@ import { getExperienceLevelColor, getExperienceLevelLabel, getOnlineStatus } fro
 
 interface DeveloperCardProps {
   user: User;
-  currentUserId?: string;
+  currentUserId?: number;
   connectionStatus?: "none" | "pending" | "connected";
-  onConnect?: (userId: string) => void;
-  onMessage?: (userId: string) => void;
-  onViewProfile?: (userId: string) => void;
+  onConnect?: (userId: number) => void;
+  onMessage?: (userId: number) => void;
+  onViewProfile?: (userId: number) => void;
 }
 
 export function DeveloperCard({
@@ -24,23 +24,23 @@ export function DeveloperCard({
   onViewProfile,
 }: DeveloperCardProps) {
   const { color: statusColor, text: statusText } = getOnlineStatus(user.isOnline, user.lastSeen);
-  const isOwnProfile = currentUserId === user._id;
+  const isOwnProfile = currentUserId === user.id;
 
   const handleConnect = () => {
     if (onConnect && !isOwnProfile) {
-      onConnect(user._id);
+      onConnect(user.id);
     }
   };
 
   const handleMessage = () => {
     if (onMessage && !isOwnProfile) {
-      onMessage(user._id);
+      onMessage(user.id);
     }
   };
 
   const handleViewProfile = () => {
     if (onViewProfile) {
-      onViewProfile(user._id);
+      onViewProfile(user.id);
     }
   };
 

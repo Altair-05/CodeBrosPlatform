@@ -1,6 +1,6 @@
-import { useParams } from "wouter";
+import { useParams, useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { User } from "@shared/types";
+import { User } from "@shared/schema";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +15,7 @@ import {
   Mail,
   MessageCircle,
   UserPlus,
+  Edit,
 } from "lucide-react";
 import {
   getExperienceLevelColor,
@@ -22,29 +23,46 @@ import {
   getOnlineStatus,
 } from "@/lib/utils";
 import { useEffect } from "react";
-
+import { useAuth } from "@/contexts/auth-context";
 
 export default function Profile() {
   const { id } = useParams<{ id: string }>();
-  const userId = id || "current";
+  const [, setLocation] = useLocation();
 
-  // FIX 4: Scroll to the top of the page when the component mounts or the ID changes.
+  // Get authenticated user data
+  const { user: currentUser, isAuthenticated, currentUserId, isLoading: isAuthLoading } = useAuth();
+
+  // Determine the actual user ID to fetch
+  // If id is "current" or undefined, use the current user's ID
+  // Use the numeric ID for PostgreSQL compatibility
+  const targetUserId = id === "current" || !id ? currentUserId : parseInt(id, 10);
+
+  // Scroll to the top of the page when the component mounts or the ID changes
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [id]);
 
-  const { data: user, isLoading } = useQuery<User>({
-    queryKey: ["user", userId],
+  const { data: user, isLoading, error } = useQuery<User>({
+    queryKey: ["user", targetUserId],
     queryFn: async () => {
-      const response = await fetch(`/api/users/${userId}`);
+      if (!targetUserId) {
+        throw new Error("No user ID available");
+      }
+      
+      const response = await fetch(`/api/users/${targetUserId}`);
       if (!response.ok) {
         throw new Error("User not found");
       }
       return response.json();
     },
+    enabled: !!targetUserId, // Only run query if we have a target user ID
   });
 
-  if (isLoading) {
+  // Check if the viewer is looking at their own profile
+  const isOwnProfile = isAuthenticated && currentUserId === targetUserId;
+
+  // Handle loading state - wait for both auth and user query to finish
+  if (isLoading || isAuthLoading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -66,26 +84,39 @@ export default function Profile() {
     );
   }
 
-  if (!user) {
+  // Handle error or no user found - FIXED: Only check after query is done loading
+  if ((!isLoading && !user) || error) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <Card className="w-full max-w-md mx-4">
           <CardContent className="pt-6">
             <div className="text-center">
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                User Not Found
+                {!isAuthenticated ? "Please Login" : "User Not Found"}
               </h1>
               <p className="text-gray-600 dark:text-gray-400">
-                The user you're looking for doesn't exist.
+                {!isAuthenticated 
+                  ? "You need to be logged in to view profiles."
+                  : "The user you're looking for doesn't exist."
+                }
               </p>
+              {!isAuthenticated && (
+                <Button 
+                  className="mt-4" 
+                  onClick={() => setLocation('/login')}
+                >
+                  Go to Login
+                </Button>
+              )}
             </div>
           </CardContent>
         </Card>
       </div>
     );
   }
+  if (!user) return null;
 
-  // FIX 1: Safely handle potential null values from the user object.
+  // Safely handle potential null values from the user object
   const { color: statusColor, text: statusText } = getOnlineStatus(
     user.isOnline ?? false,
     user.lastSeen ?? undefined
@@ -99,7 +130,6 @@ export default function Profile() {
           <CardContent className="p-8">
             <div className="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-6">
               <Avatar className="w-24 h-24">
-                {/* FIX 2: Ensure profileImage is not null before passing to src. */}
                 <AvatarImage
                   src={user.profileImage ?? undefined}
                   alt={`${user.firstName} ${user.lastName}`}
@@ -122,14 +152,36 @@ export default function Profile() {
                   </div>
 
                   <div className="flex space-x-3 mt-4 sm:mt-0">
-                    <Button className="bg-brand-blue text-white hover:bg-brand-blue-dark">
-                      <MessageCircle size={16} className="mr-2" />
-                      Message
-                    </Button>
-                    <Button variant="outline">
-                      <UserPlus size={16} className="mr-2" />
-                      Connect
-                    </Button>
+                    {isOwnProfile ? (
+                      <Button 
+                        variant="outline"
+                        onClick={() => setLocation('/profile/edit')}
+                      >
+                        <Edit size={16} className="mr-2" />
+                        Edit Profile
+                      </Button>
+                    ) : isAuthenticated ? (
+                      <>
+                        <Button 
+                          className="bg-brand-blue text-white hover:bg-brand-blue-dark"
+                          onClick={() => setLocation(`/messages?user=${user.id}`)}
+                        >
+                          <MessageCircle size={16} className="mr-2" />
+                          Message
+                        </Button>
+                        <Button variant="outline">
+                          <UserPlus size={16} className="mr-2" />
+                          Connect
+                        </Button>
+                      </>
+                    ) : (
+                      <Button 
+                        onClick={() => setLocation('/login')}
+                        variant="outline"
+                      >
+                        Login to Connect
+                      </Button>
+                    )}
                   </div>
                 </div>
 
@@ -180,7 +232,6 @@ export default function Profile() {
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
-                  {/* FIX 3: Check if user.skills exists before trying to access it. */}
                   {user.skills && user.skills.length > 0 ? (
                     user.skills.map((skill, index) => (
                       <Badge
@@ -247,32 +298,34 @@ export default function Profile() {
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* Contact Info */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Contact Information</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center space-x-3">
-                  <Mail size={16} className="text-gray-400" />
-                  <span className="text-sm text-gray-600 dark:text-gray-400">
-                    {user.email}
-                  </span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <Github size={16} className="text-gray-400" />
-                  <span className="text-sm text-gray-600 dark:text-gray-400">
-                    @{user.username}
-                  </span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <Linkedin size={16} className="text-gray-400" />
-                  <span className="text-sm text-gray-600 dark:text-gray-400">
-                    /in/{user.username}
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
+            {/* Contact Info - Only show to authenticated users */}
+            {isAuthenticated && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Contact Information</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="flex items-center space-x-3">
+                    <Mail size={16} className="text-gray-400" />
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                      {isOwnProfile ? user.email : "***@***"}
+                    </span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <Github size={16} className="text-gray-400" />
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                      @{user.username}
+                    </span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <Linkedin size={16} className="text-gray-400" />
+                    <span className="text-sm text-gray-600 dark:text-gray-400">
+                      /in/{user.username}
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Statistics */}
             <Card>
@@ -309,35 +362,37 @@ export default function Profile() {
               </CardContent>
             </Card>
 
-            {/* Mutual Connections */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Mutual Connections</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-3">
-                    <Avatar className="w-8 h-8">
-                      <AvatarFallback className="text-xs">JD</AvatarFallback>
-                    </Avatar>
-                    <span className="text-sm text-gray-600 dark:text-gray-400">
-                      John Doe
-                    </span>
+            {/* Mutual Connections - Only show to authenticated users */}
+            {isAuthenticated && !isOwnProfile && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Mutual Connections</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-3">
+                      <Avatar className="w-8 h-8">
+                        <AvatarFallback className="text-xs">JD</AvatarFallback>
+                      </Avatar>
+                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                        John Doe
+                      </span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <Avatar className="w-8 h-8">
+                        <AvatarFallback className="text-xs">JS</AvatarFallback>
+                      </Avatar>
+                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                        Jane Smith
+                      </span>
+                    </div>
+                    <Button variant="ghost" size="sm" className="w-full">
+                      View all mutual connections
+                    </Button>
                   </div>
-                  <div className="flex items-center space-x-3">
-                    <Avatar className="w-8 h-8">
-                      <AvatarFallback className="text-xs">JS</AvatarFallback>
-                    </Avatar>
-                    <span className="text-sm text-gray-600 dark:text-gray-400">
-                      Jane Smith
-                    </span>
-                  </div>
-                  <Button variant="ghost" size="sm" className="w-full">
-                    View all mutual connections
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </div>
       </div>

@@ -197,18 +197,18 @@ export function Header({
                 <DropdownMenuTrigger asChild>
                   <Avatar className="w-8 h-8 cursor-pointer ring-2 ring-gray-300 dark:ring-gray-600 hover:ring-brand-blue transition-all">
                     <AvatarImage
-                      src={user.profileImage}
+                      src={user.profileImage || undefined}
                       alt={`${user.firstName} ${user.lastName}`}
                     />
                     <AvatarFallback>
-                      {user.firstName[0]}
-                      {user.lastName[0]}
+                      {user.firstName?.[0] || ''}
+                      {user.lastName?.[0] || ''}
                     </AvatarFallback>
                   </Avatar>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem asChild>
-                    <Link href={`/profile/${user._id}`}>
+                    <Link href={`/profile/${user.id}`}>
                       <User size={16} className="mr-2" />
                       View Profile
                     </Link>
