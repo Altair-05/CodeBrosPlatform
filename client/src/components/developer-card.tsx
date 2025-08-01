@@ -8,11 +8,11 @@ import { getExperienceLevelColor, getExperienceLevelLabel, getOnlineStatus } fro
 
 interface DeveloperCardProps {
   user: User;
-  currentUserId?: string;
+  currentUserId?: number; // Updated from string to number
   connectionStatus?: "none" | "pending" | "connected";
-  onConnect?: (userId: string) => void;
-  onMessage?: (userId: string) => void;
-  onViewProfile?: (userId: string) => void;
+  onConnect?: (user: User) => void;
+  onMessage?: (userId: number) => void;
+  onViewProfile?: (userId: number) => void;
 }
 
 export function DeveloperCard({
@@ -24,37 +24,30 @@ export function DeveloperCard({
   onViewProfile,
 }: DeveloperCardProps) {
   const { color: statusColor, text: statusText } = getOnlineStatus(user.isOnline, user.lastSeen);
-  const isOwnProfile = currentUserId === user._id;
+  // Direct comparison between two numbers - much cleaner!
+  const isOwnProfile = currentUserId === user.id;
 
   const handleConnect = () => {
     if (onConnect && !isOwnProfile) {
-      onConnect(user._id);
+      onConnect(user);
     }
   };
 
   const handleMessage = () => {
     if (onMessage && !isOwnProfile) {
-      onMessage(user._id);
+      onMessage(user.id);
     }
   };
 
   const handleViewProfile = () => {
     if (onViewProfile) {
-      onViewProfile(user._id);
+      onViewProfile(user.id);
     }
   };
 
   const renderActionButton = () => {
     if (isOwnProfile) {
-      return (
-        <Button
-          onClick={handleViewProfile}
-          className="flex-1 bg-gray-100 text-gray-600 hover:bg-gray-200"
-        >
-          <Eye size={16} className="mr-2" />
-          View Profile
-        </Button>
-      );
+      return null; // No primary action for own profile
     }
 
     switch (connectionStatus) {
@@ -62,7 +55,8 @@ export function DeveloperCard({
         return (
           <Button
             onClick={handleMessage}
-            className="flex-1 bg-brand-blue text-white hover:bg-brand-blue-dark"
+            variant="default"
+            className="flex-1"
           >
             <MessageCircle size={16} className="mr-2" />
             Message
@@ -72,7 +66,8 @@ export function DeveloperCard({
         return (
           <Button
             disabled
-            className="flex-1 bg-gray-100 text-gray-600 cursor-not-allowed"
+            variant="secondary"
+            className="flex-1 cursor-not-allowed"
           >
             <Check size={16} className="mr-2" />
             Pending
@@ -82,7 +77,8 @@ export function DeveloperCard({
         return (
           <Button
             onClick={handleConnect}
-            className="flex-1 bg-brand-blue text-white hover:bg-brand-blue-dark"
+            variant="default"
+            className="flex-1"
           >
             <UserPlus size={16} className="mr-2" />
             Connect
@@ -97,7 +93,7 @@ export function DeveloperCard({
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center space-x-4">
             <Avatar className="w-16 h-16">
-              <AvatarImage src={user.profileImage} alt={`${user.firstName} ${user.lastName}`} />
+              <AvatarImage src={user.profileImage ?? undefined} alt={`${user.firstName} ${user.lastName}`} />
               <AvatarFallback className="text-lg">
                 {user.firstName[0]}{user.lastName[0]}
               </AvatarFallback>
@@ -125,7 +121,7 @@ export function DeveloperCard({
         )}
 
         <div className="flex flex-wrap gap-2 mb-4">
-          {user.skills.slice(0, 4).map((skill, index) => (
+          {(user.skills ?? []).slice(0, 4).map((skill, index) => (
             <Badge
               key={index}
               variant="secondary"
@@ -134,20 +130,21 @@ export function DeveloperCard({
               {skill}
             </Badge>
           ))}
-          {user.skills.length > 4 && (
+          {(user.skills?.length ?? 0) > 4 && (
             <Badge variant="secondary" className="text-xs">
-              +{user.skills.length - 4} more
+              +{(user.skills?.length ?? 0) - 4} more
             </Badge>
           )}
         </div>
 
-        <div className="flex space-x-3">
-          {renderActionButton()}
+        <div className="flex space-x-2">
+          {!isOwnProfile && renderActionButton()}
           <Button
-            variant="outline"
             onClick={handleViewProfile}
-            className="px-4"
+            variant="outline"
+            className={isOwnProfile ? "flex-1" : ""}
           >
+            <Eye size={16} className="mr-2" />
             View Profile
           </Button>
         </div>

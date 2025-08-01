@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useAuth } from "@/contexts/auth-context";
+import { useAuth } from "@/hooks/use-auth";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 
@@ -25,7 +25,7 @@ export default function Login() {
 
     try {
       const success = await login(formData.email, formData.password);
-      
+
       if (success) {
         toast({
           title: "Welcome back!",
@@ -42,7 +42,7 @@ export default function Login() {
     } catch (error) {
       toast({
         title: "Error",
-        description: "An error occurred during login. Please try again.",
+        description: "An unexpected error occurred during login. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -138,4 +138,4 @@ export default function Login() {
       </div>
     </div>
   );
-} 
+}

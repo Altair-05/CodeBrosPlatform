@@ -1,4 +1,5 @@
 import { Link, useLocation } from "wouter";
+import React from "react";
 import {
   Bell,
   Code,
@@ -10,7 +11,7 @@ import {
   Users,
   BellOff,
   LogOut,
-  User
+  User as UserIcon
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -24,8 +25,9 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useTheme } from "@/components/theme-provider";
 import { Badge } from "@/components/ui/badge";
-import { useAuth } from "@/contexts/auth-context";
+import { useAuth } from "@/hooks/use-auth";
 import { useState } from "react";
+import { User } from "@shared/types";
 
 interface HeaderProps {
   notificationCount?: number;
@@ -38,13 +40,37 @@ export function Header({
 }: HeaderProps) {
   const [location, setLocation] = useLocation();
   const { theme, setTheme } = useTheme();
-  const { user, logout, isAuthenticated } = useAuth();
+  const { currentUserId, logout, isAuthenticated } = useAuth();
+  const [user, setUser] = useState<User | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Temporary fetch for user profile to support header display
+  React.useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (currentUserId) {
+        try {
+          const response = await fetch(`/api/users/${currentUserId}`);
+          if (response.ok) {
+            const userData: User = await response.json();
+            setUser(userData);
+          } else {
+            console.error("Failed to fetch user profile for header:", response.status);
+            setUser(null);
+          }
+        } catch (error) {
+          console.error("Error fetching user profile for header:", error);
+          setUser(null);
+        }
+      } else {
+        setUser(null);
+      }
+    };
+    fetchUserProfile();
+  }, [currentUserId]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      // Navigate to network page with search query
       setLocation(`/network?search=${encodeURIComponent(searchQuery.trim())}`);
     }
   };
@@ -192,12 +218,12 @@ export function Header({
             </Button>
 
             {/* Profile Dropdown */}
-            {isAuthenticated && user ? (
+            {isAuthenticated && user ? ( // Check if user object is available
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Avatar className="w-8 h-8 cursor-pointer ring-2 ring-gray-300 dark:ring-gray-600 hover:ring-brand-blue transition-all">
                     <AvatarImage
-                      src={user.profileImage}
+                      src={user.profileImage ?? undefined}
                       alt={`${user.firstName} ${user.lastName}`}
                     />
                     <AvatarFallback>
@@ -208,8 +234,8 @@ export function Header({
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem asChild>
-                    <Link href={`/profile/${user._id}`}>
-                      <User size={16} className="mr-2" />
+                    <Link href={`/profile/${(user as any).id}`}> {/* Apply (as any).id workaround */}
+                      <UserIcon size={16} className="mr-2" />
                       View Profile
                     </Link>
                   </DropdownMenuItem>
