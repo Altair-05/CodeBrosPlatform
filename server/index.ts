@@ -83,7 +83,7 @@ app.use((req, res, next) => {
       process.exit(0);
     });
 
-  } catch (error) {
+  } catch (error: any) {
     log("Failed to start server:", error);
     process.exit(1);
   }
