@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { Message, User } from "@shared/types";
+import { useLocation } from "wouter";
+import { Message, User, Conversation } from "@shared/schema";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,26 +13,50 @@ import { Send, Search } from "lucide-react";
 import { formatTimeAgo } from "@/lib/utils";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-
-import { Conversation } from "@shared/types";
+import { useAuth } from "@/contexts/auth-context";
 
 export default function Messages() {
   const { toast } = useToast();
+  const { currentUserId, isAuthenticated, isLoading: isAuthLoading } = useAuth();
+  const [location] = useLocation();
   const [selectedConversation, setSelectedConversation] = useState<User | null>(null);
   const [messageText, setMessageText] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const currentUserId = "current"; // TODO: Get from auth context
 
   // Fetch conversations
   const { data: conversations = [], isLoading: conversationsLoading } = useQuery<Conversation[]>({
-    queryKey: [`/api/messages/conversations/${currentUserId}`],
+    queryKey: ['conversations', currentUserId],
+    queryFn: async () => {
+      const response = await apiRequest("GET", `/api/messages/conversations/${currentUserId}`);
+      return response.json();
+    },
+    enabled: !!currentUserId && isAuthenticated,
   });
 
   // Fetch messages for selected conversation
   const { data: messages = [], isLoading: messagesLoading } = useQuery<Message[]>({
-    queryKey: [`/api/messages/conversation/${currentUserId}/${selectedConversation?.id}`],
-    enabled: !!selectedConversation,
+    queryKey: ['messages', currentUserId, selectedConversation?.id],
+    queryFn: async () => {
+      const response = await apiRequest("GET", `/api/messages/conversation/${currentUserId}/${selectedConversation?.id}`);
+      return response.json();
+    },
+    enabled: !!currentUserId && !!selectedConversation && isAuthenticated,
   });
+
+  // Handle pre-selecting conversation from URL parameter
+  useEffect(() => {
+    if (!conversations.length) return;
+
+    const urlParams = new URLSearchParams(location.split('?')[1] || '');
+    const userId = urlParams.get('user');
+    
+    if (userId) {
+      const targetConversation = conversations.find(conv => conv.user.id === parseInt(userId));
+      if (targetConversation) {
+        setSelectedConversation(targetConversation.user);
+      }
+    }
+  }, [conversations, location]);
 
   // Send message mutation
   const sendMessageMutation = useMutation({
@@ -45,8 +70,8 @@ export default function Messages() {
     },
     onSuccess: () => {
       setMessageText("");
-      queryClient.invalidateQueries({ queryKey: [`/api/messages/conversation`] });
-      queryClient.invalidateQueries({ queryKey: [`/api/messages/conversations`] });
+      queryClient.invalidateQueries({ queryKey: ['messages', currentUserId, selectedConversation?.id] });
+      queryClient.invalidateQueries({ queryKey: ['conversations', currentUserId] });
     },
     onError: () => {
       toast({
@@ -59,7 +84,7 @@ export default function Messages() {
 
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedConversation || !messageText.trim()) return;
+    if (!selectedConversation || !messageText.trim() || !currentUserId) return;
 
     sendMessageMutation.mutate({
       receiverId: selectedConversation.id,
@@ -72,6 +97,37 @@ export default function Messages() {
       .toLowerCase()
       .includes(searchQuery.toLowerCase())
   );
+
+  // Show loading while auth is loading
+  if (isAuthLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 h-[calc(100vh-200px)]">
+            <div className="lg:col-span-1">
+              <div className="h-full bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse"></div>
+            </div>
+            <div className="lg:col-span-2">
+              <div className="h-full bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show login message if not authenticated (only after auth loading is complete)
+  if (!isAuthenticated || !currentUserId) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <Card className="w-96">
+          <CardContent className="p-6 text-center">
+            <p className="text-gray-600 dark:text-gray-400">Please log in to access messages.</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -110,8 +166,8 @@ export default function Messages() {
                       <div key={conversation.user.id}>
                         <div
                           className={`p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
-                            selectedConversation?._id === conversation.user._id
-                              ? "bg-brand-blue/10 border-r-2 border-brand-blue"
+                            selectedConversation?.id === conversation.user.id
+                              ? "bg-blue-50 dark:bg-blue-900/20 border-r-2 border-blue-500"
                               : ""
                           }`}
                           onClick={() => setSelectedConversation(conversation.user)}
@@ -119,7 +175,7 @@ export default function Messages() {
                           <div className="flex items-start space-x-3">
                             <Avatar className="w-10 h-10">
                               <AvatarImage 
-                                src={conversation.user.profileImage} 
+                                src={conversation.user.profileImage || undefined} 
                                 alt={`${conversation.user.firstName} ${conversation.user.lastName}`} 
                               />
                               <AvatarFallback>
@@ -133,7 +189,7 @@ export default function Messages() {
                                 </p>
                                 <div className="flex items-center space-x-2">
                                   {conversation.unreadCount > 0 && (
-                                    <Badge className="bg-brand-blue text-white text-xs px-1.5 py-0.5">
+                                    <Badge className="bg-blue-500 text-white text-xs px-1.5 py-0.5">
                                       {conversation.unreadCount}
                                     </Badge>
                                   )}
@@ -167,7 +223,7 @@ export default function Messages() {
                   <div className="flex items-center space-x-3">
                     <Avatar className="w-10 h-10">
                       <AvatarImage 
-                        src={selectedConversation.profileImage} 
+                        src={selectedConversation.profileImage || undefined} 
                         alt={`${selectedConversation.firstName} ${selectedConversation.lastName}`} 
                       />
                       <AvatarFallback>
@@ -212,7 +268,7 @@ export default function Messages() {
                             <div
                               className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
                                 message.senderId === currentUserId
-                                  ? "bg-brand-blue text-white"
+                                  ? "bg-blue-500 text-white"
                                   : "bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white"
                               }`}
                             >
@@ -246,7 +302,7 @@ export default function Messages() {
                     <Button
                       type="submit"
                       disabled={!messageText.trim() || sendMessageMutation.isPending}
-                      className="bg-brand-blue text-white hover:bg-brand-blue-dark"
+                      className="bg-blue-500 text-white hover:bg-blue-600"
                     >
                       <Send size={16} />
                     </Button>

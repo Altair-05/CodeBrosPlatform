@@ -1,8 +1,9 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { User } from "@shared/types";
+import { User } from "@shared/schema";
 
 interface AuthContextType {
   user: User | null;
+  currentUserId: number | null;
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => void;
   isLoading: boolean;
@@ -14,6 +15,9 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Derive currentUserId from user state - using numeric id for PostgreSQL compatibility
+  const currentUserId = user ? user.id : null;
 
   // Check if user is already logged in on app start
   useEffect(() => {
@@ -60,6 +64,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const value = {
     user,
+    currentUserId,
     login,
     logout,
     isLoading,
@@ -75,4 +80,4 @@ export function useAuth() {
     throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
-} 
+}
