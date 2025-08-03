@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Send, Search } from "lucide-react";
-import { formatTimeAgo } from "@/lib/utils";
+import { formatTimeAgo, getApiErrorMessage } from "@/lib/utils";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
@@ -29,13 +29,13 @@ export default function Messages() {
 
   // Fetch messages for selected conversation
   const { data: messages = [], isLoading: messagesLoading } = useQuery<Message[]>({
-    queryKey: [`/api/messages/conversation/${currentUserId}/${selectedConversation?.id}`],
+    queryKey: [`/api/messages/conversation/${currentUserId}/${selectedConversation?._id}`],
     enabled: !!selectedConversation,
   });
 
   // Send message mutation
   const sendMessageMutation = useMutation({
-    mutationFn: async ({ receiverId, content }: { receiverId: number; content: string }) => {
+    mutationFn: async ({ receiverId, content }: { receiverId: string; content: string }) => {
       const response = await apiRequest("POST", "/api/messages", {
         senderId: currentUserId,
         receiverId,
@@ -48,10 +48,10 @@ export default function Messages() {
       queryClient.invalidateQueries({ queryKey: [`/api/messages/conversation`] });
       queryClient.invalidateQueries({ queryKey: [`/api/messages/conversations`] });
     },
-    onError: () => {
+    onError: (error) => {
       toast({
-        title: "Error",
-        description: "Failed to send message. Please try again.",
+        title: "Message Failed",
+        description: getApiErrorMessage(error),
         variant: "destructive",
       });
     },
@@ -62,7 +62,7 @@ export default function Messages() {
     if (!selectedConversation || !messageText.trim()) return;
 
     sendMessageMutation.mutate({
-      receiverId: selectedConversation.id,
+      receiverId: selectedConversation._id,
       content: messageText.trim(),
     });
   };
@@ -107,7 +107,7 @@ export default function Messages() {
                 ) : (
                   <div className="space-y-1">
                     {filteredConversations.map((conversation, index) => (
-                      <div key={conversation.user.id}>
+                      <div key={conversation.user._id}>
                         <div
                           className={`p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
                             selectedConversation?._id === conversation.user._id
@@ -204,7 +204,7 @@ export default function Messages() {
                       <div className="space-y-4">
                         {messages.map((message) => (
                           <div
-                            key={message.id}
+                            key={message._id}
                             className={`flex ${
                               message.senderId === currentUserId ? "justify-end" : "justify-start"
                             }`}
