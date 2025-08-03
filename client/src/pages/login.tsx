@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
+import { useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/contexts/auth-context";
 import { useToast } from "@/hooks/use-toast";
+import { getApiErrorMessage } from "@/lib/utils";
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 
 export default function Login() {
@@ -17,37 +19,29 @@ export default function Login() {
     password: "",
   });
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+
+  const loginMutation = useMutation({
+    mutationFn: ({ email, password }: { email: string; password: string }) => 
+      login(email, password),
+    onSuccess: () => {
+      toast({
+        title: "Welcome back!",
+        description: "You have successfully logged in.",
+      });
+      setLocation("/");
+    },
+    onError: (error) => {
+      toast({
+        title: "Login Failed",
+        description: getApiErrorMessage(error),
+        variant: "destructive",
+      });
+    },
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-
-    try {
-      const success = await login(formData.email, formData.password);
-      
-      if (success) {
-        toast({
-          title: "Welcome back!",
-          description: "You have successfully logged in.",
-        });
-        setLocation("/");
-      } else {
-        toast({
-          title: "Login failed",
-          description: "Please check your email and password.",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "An error occurred during login. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    loginMutation.mutate({ email: formData.email, password: formData.password });
   };
 
   const handleInputChange = (field: string, value: string) => {
@@ -108,9 +102,9 @@ export default function Login() {
               <Button
                 type="submit"
                 className="w-full"
-                disabled={isLoading}
+                disabled={loginMutation.isPending}
               >
-                {isLoading ? "Signing In..." : "Sign In"}
+                {loginMutation.isPending ? "Signing In..." : "Sign In"}
               </Button>
 
               <div className="text-center space-y-2">
@@ -138,4 +132,4 @@ export default function Login() {
       </div>
     </div>
   );
-} 
+}
