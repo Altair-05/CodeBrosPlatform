@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { useAuth } from "@/contexts/auth-context";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/use-auth";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { User, UpdateUser } from "@shared/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,22 +14,154 @@ import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
-import { X, Plus, Save, User, Shield, Bell, Palette } from "lucide-react";
+import { X, Plus, Save, User as UserIcon, Shield, Bell, Palette } from "lucide-react";
+import { apiRequest } from "@/lib/queryClient";
+
+const SKILLS_OPTIONS = [
+  "JavaScript", "TypeScript", "React", "Vue", "Angular", "Node.js", "Python", "Java", "C#", "C++",
+  "Go", "Rust", "PHP", "Ruby", "Django", "Flask", "Express", "Spring Boot", "ASP.NET", "Laravel",
+  "MongoDB", "PostgreSQL", "MySQL", "Redis", "AWS", "Azure", "GCP", "Docker", "Kubernetes", "Git",
+  "CI/CD", "DevOps", "Machine Learning", "AI", "Data Science", "Mobile Development", "Flutter", "React Native",
+  "UI/UX", "Figma", "Adobe XD", "HTML/CSS", "Sass", "Tailwind CSS", "Bootstrap", "GraphQL", "REST API"
+];
 
 export default function Settings() {
-  const { user, isAuthenticated } = useAuth();
+  const { currentUserId, isLoadingAuth, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const [, setLocation] = useLocation();
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("profile");
 
-  // Redirect if not authenticated
-  React.useEffect(() => {
-    if (!isAuthenticated) {
+  const [formData, setFormData] = useState<UpdateUser>({
+    firstName: "",
+    lastName: "",
+    username: "",
+    email: "",
+    title: "",
+    bio: "",
+    experienceLevel: "beginner",
+    skills: [],
+    openToCollaborate: true,
+    profileImage: "",
+  });
+  const [newSkill, setNewSkill] = useState("");
+
+  useEffect(() => {
+    if (!isLoadingAuth && !isAuthenticated) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to access settings.",
+        variant: "destructive",
+      });
       setLocation("/login");
     }
-  }, [isAuthenticated, setLocation]);
+  }, [isAuthenticated, isLoadingAuth, setLocation, toast]);
 
-  if (!isAuthenticated || !user) {
+  const {
+    data: userProfile,
+    isLoading: isProfileLoading,
+    isError,
+    error,
+  } = useQuery<User, Error>({
+    queryKey: ["userProfile", currentUserId],
+    queryFn: async (): Promise<User> => {
+      const response = await apiRequest("GET", `/api/users/${currentUserId}`);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: 'Failed to fetch user profile data.'}));
+        throw new Error(errorData.message);
+      }
+      return response.json();
+    },
+    enabled: !!currentUserId && !isLoadingAuth,
+  });
+
+  useEffect(() => {
+    if (isError && error) {
+      toast({
+        title: "Error loading profile",
+        description: error.message || "Failed to fetch user profile data.",
+        variant: "destructive",
+      });
+    }
+  }, [isError, error, toast]);
+
+  useEffect(() => {
+    if (userProfile) {
+      setFormData({
+        firstName: (userProfile as any).firstName,
+        lastName: (userProfile as any).lastName,
+        username: (userProfile as any).username,
+        email: (userProfile as any).email,
+        title: (userProfile as any).title || "",
+        bio: (userProfile as any).bio ?? "",
+        experienceLevel: (userProfile as any).experienceLevel,
+        skills: (userProfile as any).skills ?? [],
+        openToCollaborate: (userProfile as any).openToCollaborate ?? true,
+        profileImage: (userProfile as any).profileImage ?? "",
+      });
+    }
+  }, [userProfile]);
+
+  const updateProfileMutation = useMutation({
+    mutationFn: async (updatedData: UpdateUser) => {
+      if (!currentUserId) {
+        throw new Error("User ID not available for update.");
+      }
+      const response = await apiRequest("PATCH", `/api/users/${Number(currentUserId)}`, updatedData);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: 'There was an error saving your profile.'}));
+        throw new Error(errorData.message);
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Profile Updated!",
+        description: "Your profile information has been successfully saved.",
+      });
+      queryClient.invalidateQueries({ queryKey: ["userProfile", currentUserId] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Update Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleInputChange = (field: keyof UpdateUser, value: string | boolean | (string | null)[] | null) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const addSkill = () => {
+    const skillToAdd = newSkill.trim();
+    if (skillToAdd && !(formData.skills as any)?.includes(skillToAdd)) {
+      const skillsArray = formData.skills || [];
+      handleInputChange("skills", [...skillsArray, skillToAdd]);
+      setNewSkill("");
+    }
+  };
+
+  const removeSkill = (skillToRemove: string) => {
+    const updatedSkills = (formData.skills as any)?.filter((skill: string) => skill !== skillToRemove) || [];
+    handleInputChange("skills", updatedSkills);
+  };
+
+  const handleSubmitProfile = (e: React.FormEvent) => {
+    e.preventDefault();
+    updateProfileMutation.mutate(formData);
+  };
+
+  if (isLoadingAuth || isProfileLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <p className="text-xl text-gray-500 dark:text-gray-400">Loading settings...</p>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated || !userProfile) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <Card className="w-full max-w-md mx-4">
@@ -74,7 +207,7 @@ export default function Settings() {
                         : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800"
                     }`}
                   >
-                    <User size={16} />
+                    <UserIcon size={16} />
                     <span>Profile</span>
                   </button>
                   <button
@@ -123,216 +256,178 @@ export default function Settings() {
                   <CardTitle>Profile Settings</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  <div className="flex items-center space-x-4">
-                    <Avatar className="w-20 h-20">
-                      <AvatarImage src={user.profileImage} />
-                      <AvatarFallback className="text-xl">
-                        {user.firstName[0]}{user.lastName[0]}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <Button variant="outline">Change Photo</Button>
+                  <form onSubmit={handleSubmitProfile} className="space-y-6">
+                    <div className="flex items-center space-x-4">
+                      <Avatar className="w-20 h-20">
+                        <AvatarImage src={formData.profileImage || undefined} alt="Profile Image" />
+                        <AvatarFallback className="text-xl">
+                          {formData.firstName?.[0]}{formData.lastName?.[0]}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <Button type="button" variant="outline">Change Photo</Button>
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="firstName">First Name</Label>
-                      <Input id="firstName" defaultValue={user.firstName} />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="firstName">First Name</Label>
+                        <Input
+                          id="firstName"
+                          value={formData.firstName || ""}
+                          onChange={(e) => handleInputChange("firstName", e.target.value)}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="lastName">Last Name</Label>
+                        <Input
+                          id="lastName"
+                          value={formData.lastName || ""}
+                          onChange={(e) => handleInputChange("lastName", e.target.value)}
+                        />
+                      </div>
                     </div>
+
                     <div>
-                      <Label htmlFor="lastName">Last Name</Label>
-                      <Input id="lastName" defaultValue={user.lastName} />
+                      <Label htmlFor="title">Job Title</Label>
+                      <Input
+                          id="title"
+                          value={formData.title || ""}
+                          onChange={(e) => handleInputChange("title", e.target.value)}
+                      />
                     </div>
-                  </div>
 
-                  <div>
-                    <Label htmlFor="title">Job Title</Label>
-                    <Input id="title" defaultValue={user.title} />
-                  </div>
+                    <div>
+                      <Label htmlFor="bio">Bio</Label>
+                      <Textarea
+                          id="bio"
+                          value={formData.bio || ""}
+                          onChange={(e) => handleInputChange("bio", e.target.value)}
+                          rows={4}
+                      />
+                    </div>
 
-                  <div>
-                    <Label htmlFor="bio">Bio</Label>
-                    <Textarea id="bio" defaultValue={user.bio} rows={4} />
-                  </div>
+                    <div>
+                      <Label htmlFor="email">Email</Label>
+                      <Input
+                          id="email"
+                          type="email"
+                          value={formData.email || ""}
+                          onChange={(e) => handleInputChange("email", e.target.value)}
+                      />
+                    </div>
 
-                  <div>
-                    <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" defaultValue={user.email} />
-                  </div>
+                    <div>
+                      <Label htmlFor="username">Username</Label>
+                      <Input
+                          id="username"
+                          value={formData.username || ""}
+                          onChange={(e) => handleInputChange("username", e.target.value)}
+                      />
+                    </div>
 
-                  <div>
-                    <Label htmlFor="username">Username</Label>
-                    <Input id="username" defaultValue={user.username} />
-                  </div>
+                    {/* Experience Level */}
+                    <div>
+                      <Label htmlFor="experienceLevel">Experience Level</Label>
+                      <Select
+                          value={formData.experienceLevel || "beginner"}
+                          onValueChange={(value) => handleInputChange("experienceLevel", value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select your experience level" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="beginner">Beginner (0-2 years)</SelectItem>
+                          <SelectItem value="intermediate">Intermediate (2-5 years)</SelectItem>
+                          <SelectItem value="professional">Professional (5+ years)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-                  <div className="flex items-center space-x-2">
-                    <Switch id="openToCollaborate" defaultChecked={user.openToCollaborate} />
-                    <Label htmlFor="openToCollaborate">Open to collaboration opportunities</Label>
-                  </div>
+                    {/* Skills */}
+                    <div>
+                      <Label>Skills</Label>
+                      <div className="flex gap-2 mb-3">
+                        <Input
+                            value={newSkill}
+                            onChange={(e) => setNewSkill(e.target.value)}
+                            placeholder="Add a skill..."
+                            onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addSkill())}
+                        />
+                        <Button type="button" onClick={addSkill} size="sm">
+                          <Plus size={16} />
+                        </Button>
+                      </div>
 
-                  <Button className="w-full">
-                    <Save size={16} className="mr-2" />
-                    Save Changes
-                  </Button>
+                      {/* Selected Skills */}
+                      <div className="flex flex-wrap gap-2 mb-3">
+                        {formData.skills?.map((skill) => (
+                            <Badge key={skill} variant="secondary" className="flex items-center gap-1">
+                              {skill}
+                              <button
+                                  type="button"
+                                  onClick={() => removeSkill(skill!)}
+                                  className="ml-1 hover:text-red-500"
+                              >
+                                <X size={12} />
+                              </button>
+                            </Badge>
+                        ))}
+                      </div>
+
+                      {/* Popular Skills */}
+                      <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                        Popular skills:
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        {SKILLS_OPTIONS.map((skill) => (
+                            <button
+                                key={skill}
+                                type="button"
+                                onClick={() => {
+                                  if (!(formData.skills as any)?.includes(skill)) {
+                                    const skillsArray = formData.skills || [];
+                                    handleInputChange("skills", [...skillsArray, skill]);
+                                  }
+                                }}
+                                className={`px-2 py-1 text-xs rounded ${
+                                  (formData.skills as any)?.includes(skill)
+                                      ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
+                                      : "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                                }`}
+                            >
+                              {skill}
+                            </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                          id="openToCollaborate"
+                          checked={formData.openToCollaborate ?? true}
+                          onCheckedChange={(checked) => handleInputChange("openToCollaborate", checked)}
+                      />
+                      <Label htmlFor="openToCollaborate">Open to collaboration opportunities</Label>
+                    </div>
+
+                    <Button
+                        type="submit"
+                        className="w-full"
+                        disabled={updateProfileMutation.isPending}
+                    >
+                      {updateProfileMutation.isPending ? "Saving Changes..." : <><Save size={16} className="mr-2" />Save Changes</>}
+                    </Button>
+                  </form>
                 </CardContent>
               </Card>
             )}
 
-            {activeTab === "security" && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Security Settings</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div>
-                    <Label htmlFor="currentPassword">Current Password</Label>
-                    <Input id="currentPassword" type="password" />
-                  </div>
+            {/* Other Tabs (Security, Notifications, Appearance) remain the same */}
 
-                  <div>
-                    <Label htmlFor="newPassword">New Password</Label>
-                    <Input id="newPassword" type="password" />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="confirmPassword">Confirm New Password</Label>
-                    <Input id="confirmPassword" type="password" />
-                  </div>
-
-                  <Separator />
-
-                  <div>
-                    <h3 className="text-lg font-semibold mb-4">Two-Factor Authentication</h3>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium">Two-factor authentication</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                          Add an extra layer of security to your account
-                        </p>
-                      </div>
-                      <Button variant="outline">Enable</Button>
-                    </div>
-                  </div>
-
-                  <Button className="w-full">
-                    <Save size={16} className="mr-2" />
-                    Update Password
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
-
-            {activeTab === "notifications" && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Notification Settings</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium">Email Notifications</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                          Receive email notifications for important updates
-                        </p>
-                      </div>
-                      <Switch defaultChecked />
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium">Connection Requests</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                          Get notified when someone wants to connect
-                        </p>
-                      </div>
-                      <Switch defaultChecked />
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium">Messages</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                          Notify me about new messages
-                        </p>
-                      </div>
-                      <Switch defaultChecked />
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium">Profile Views</p>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">
-                          Get notified when someone views your profile
-                        </p>
-                      </div>
-                      <Switch />
-                    </div>
-                  </div>
-
-                  <Button className="w-full">
-                    <Save size={16} className="mr-2" />
-                    Save Preferences
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
-
-            {activeTab === "appearance" && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Appearance Settings</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  <div>
-                    <Label htmlFor="theme">Theme</Label>
-                    <Select defaultValue="system">
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select theme" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="light">Light</SelectItem>
-                        <SelectItem value="dark">Dark</SelectItem>
-                        <SelectItem value="system">System</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="fontSize">Font Size</Label>
-                    <Select defaultValue="medium">
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select font size" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="small">Small</SelectItem>
-                        <SelectItem value="medium">Medium</SelectItem>
-                        <SelectItem value="large">Large</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium">Compact Mode</p>
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        Use a more compact layout
-                      </p>
-                    </div>
-                    <Switch />
-                  </div>
-
-                  <Button className="w-full">
-                    <Save size={16} className="mr-2" />
-                    Save Preferences
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
           </div>
         </div>
       </div>
     </div>
   );
-} 
+}

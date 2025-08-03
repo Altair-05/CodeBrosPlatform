@@ -1,7 +1,11 @@
+
+
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "./routes";
+
 import { setupVite, serveStatic, log } from "./vite";
-import { mongoStorage } from "./db/mongo.js";
+// import { mongoStorage } from "./db/mongo.js"; // Removed MongoDB import
+import { storage } from "./storage"; // Use the new DrizzleStorage
 
 const app = express();
 app.use(express.json());
@@ -39,9 +43,11 @@ app.use((req, res, next) => {
 
 (async () => {
   try {
-    // Connect to MongoDB
-    await mongoStorage.connect();
-    log("Connected to MongoDB successfully");
+    // No explicit connect call for Drizzle client, it uses the pool.
+    // Optionally initialize sample data here if needed for fresh DB setup
+    if (process.env.NODE_ENV === "development") { // Only run in development
+      await storage.initializeSampleData(); // Call sample data initializer
+    }
 
     const server = await registerRoutes(app);
 
@@ -50,21 +56,17 @@ app.use((req, res, next) => {
       const message = err.message || "Internal Server Error";
 
       res.status(status).json({ message });
-      throw err;
+      console.error(err); // Log the error for debugging
+      // Do not throw err here in production; only for development/debugging to see full stack trace
+      // throw err; // Removed re-throw to avoid unhandled promise rejection in Express
     });
 
-    // importantly only setup vite in development and after
-    // setting up all the other routes so the catch-all route
-    // doesn't interfere with the other routes
     if (app.get("env") === "development") {
       await setupVite(app, server);
     } else {
       serveStatic(app);
     }
 
-    // ALWAYS serve the app on port 5000
-    // this serves both the API and the client.
-    // It is the only port that is not firewalled.
     const port = 5000;
     server.listen(port, () => {
       log(`serving on port ${port}`);
@@ -73,13 +75,14 @@ app.use((req, res, next) => {
     // Graceful shutdown
     process.on('SIGINT', async () => {
       log('Shutting down server...');
-      await mongoStorage.disconnect();
+      // Drizzle pool might need explicit end, but often handled automatically on process exit
+      // if (pool) await pool.end(); // If pool is exported directly or accessible
       process.exit(0);
     });
 
     process.on('SIGTERM', async () => {
       log('Shutting down server...');
-      await mongoStorage.disconnect();
+      // if (pool) await pool.end();
       process.exit(0);
     });
 

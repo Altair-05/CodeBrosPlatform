@@ -1,7 +1,7 @@
-import React, { useState } from "react";
-import { useLocation } from "wouter"; // Import useLocation for navigation
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { User } from "@shared/types";
+import React, { useState, useMemo } from "react";
+import { useLocation } from "wouter";
+import { useQuery } from "@tanstack/react-query";
+import { User, Connection } from "@shared/types";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,9 +9,9 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DeveloperCard } from "@/components/developer-card";
 import { ConnectionModal } from "@/components/connection-modal";
-import { useToast } from "@/hooks/use-toast";
-import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Search } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
+import { useConnectionActions } from "@/hooks/use-connection-actions";
 
 interface SearchFilters {
   query: string;
@@ -21,9 +21,21 @@ interface SearchFilters {
   isOnline: boolean;
 }
 
+type ConnectionStatus = "none" | "pending" | "connected";
+
 export default function Network() {
-  const { toast } = useToast();
-  const [location, setLocation] = useLocation(); // Get both location and setLocation
+  const [location, setLocation] = useLocation();
+  const { currentUserId, isLoadingAuth } = useAuth();
+
+  const {
+    openConnectionModal,
+    submitConnectionRequest,
+    showConnectionModal,
+    selectedUserForModal,
+    closeConnectionModal,
+    isSendingRequest,
+  } = useConnectionActions();
+
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState<SearchFilters>({
     query: "",
@@ -33,7 +45,6 @@ export default function Network() {
     isOnline: false,
   });
 
-  // Parse search query from URL on component mount
   React.useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const searchParam = urlParams.get('search');
@@ -42,11 +53,10 @@ export default function Network() {
       setFilters(prev => ({ ...prev, query: searchParam }));
     }
   }, [location]);
-  const [sortBy, setSortBy] = useState<"newest" | "popular" | "online">("newest");
-  const [showConnectionModal, setShowConnectionModal] = useState(false);
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
-  // Fetch users with search/filter
+  const [sortBy, setSortBy] = useState<"newest" | "popular" | "online">("newest");
+
+  // Fetch users based on search filters
   const { data: users = [], isLoading } = useQuery<User[]>({
     queryKey: ["/api/users/search", filters],
     queryFn: async () => {
@@ -64,43 +74,67 @@ export default function Network() {
       const response = await fetch(`/api/users/search?${params.toString()}`, {
         credentials: "include"
       });
-      
+
       if (!response.ok) {
         console.error('Search failed:', response.status);
         return [];
       }
-      
+
       const data = await response.json();
       return Array.isArray(data) ? data : [];
     },
   });
 
-  // Send connection request mutation
-  const sendConnectionMutation = useMutation({
-    mutationFn: async ({ receiverId, message }: { receiverId: number; message?: string }) => {
-      const response = await apiRequest("POST", "/api/connections", {
-        requesterId: 1, // TODO: Get from auth context
-        receiverId,
-        message,
-        status: "pending",
+  // Fetch current user's connections to determine connection status
+  const { data: currentUserConnections = [], isLoading: isLoadingConnections } = useQuery<Connection[]>({
+    queryKey: ["currentUserConnections", currentUserId],
+    queryFn: async () => {
+      if (!currentUserId) return [];
+      const response = await fetch(`/api/connections/user/${currentUserId}`, {
+        credentials: "include"
       });
+      if (!response.ok) {
+        return [];
+      }
       return response.json();
     },
-    onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Connection request sent successfully!",
-      });
-      queryClient.invalidateQueries({ queryKey: ["/api/connections"] });
-    },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to send connection request. Please try again.",
-        variant: "destructive",
-      });
-    },
+    enabled: !!currentUserId && !isLoadingAuth,
   });
+
+  // Calculate connection status for each user
+  const getConnectionStatus = useMemo(() => {
+    return (targetUser: User): ConnectionStatus => {
+      if (!currentUserId || !targetUser) return "none";
+      if (currentUserId === targetUser.id) return "none"; // Self handled in DeveloperCard
+
+      const hasPendingRequestToUser = currentUserConnections.some(
+        (conn) =>
+          conn.requesterId === currentUserId &&
+          conn.receiverId === targetUser.id &&
+          conn.status === "pending"
+      );
+
+      const hasPendingRequestFromUser = currentUserConnections.some(
+        (conn) =>
+          conn.requesterId === targetUser.id &&
+          conn.receiverId === currentUserId &&
+          conn.status === "pending"
+      );
+
+      const areConnected = currentUserConnections.some(
+        (conn) =>
+          ((conn.requesterId === currentUserId &&
+            conn.receiverId === targetUser.id) ||
+            (conn.requesterId === targetUser.id &&
+              conn.receiverId === currentUserId)) &&
+          conn.status === "accepted"
+      );
+
+      if (areConnected) return "connected";
+      if (hasPendingRequestToUser || hasPendingRequestFromUser) return "pending";
+      return "none";
+    };
+  }, [currentUserId, currentUserConnections]);
 
   const handleSearch = () => {
     setFilters(prev => ({ ...prev, query: searchQuery }));
@@ -128,20 +162,11 @@ export default function Network() {
     }));
   };
 
-  const handleConnect = (userId: string) => {
-    const user = users.find(u => u._id === userId);
-    if (user) {
-      setSelectedUser(user);
-      setShowConnectionModal(true);
-    }
+  const handleConnect = (userToConnect: User) => {
+    openConnectionModal(userToConnect);
   };
 
-  const handleSendRequest = (userId: string, message?: string) => {
-    sendConnectionMutation.mutate({ receiverId: userId, message });
-  };
-  
-  // FIX: Added handler to navigate to the user's profile page.
-  const handleViewProfile = (userId: string) => {
+  const handleViewProfile = (userId: number) => {
     setLocation(`/profile/${userId}`);
   };
 
@@ -150,25 +175,24 @@ export default function Network() {
       case "online":
         return Number(b.isOnline) - Number(a.isOnline);
       case "popular":
-        // Sort by number of connections (simulated)
         return Math.random() - 0.5;
       default:
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(); // newest first
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     }
   });
+
+  const isLoadingData = isLoading || isLoadingConnections;
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-          
-          {/* Sidebar Filters */}
+
           <aside className="lg:col-span-1">
             <Card className="sticky top-24">
               <CardContent className="p-6">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Filters</h3>
-                
-                {/* Search */}
+
                 <div className="mb-6">
                   <Label htmlFor="search" className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                     Search
@@ -187,7 +211,6 @@ export default function Network() {
                   </div>
                 </div>
 
-                {/* Experience Level */}
                 <div className="mb-6">
                   <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                     Experience Level
@@ -198,7 +221,7 @@ export default function Network() {
                         <Checkbox
                           id={level}
                           checked={filters.experienceLevel.includes(level)}
-                          onCheckedChange={(checked) => 
+                          onCheckedChange={(checked) =>
                             handleExperienceLevelChange(level, checked as boolean)
                           }
                         />
@@ -210,7 +233,6 @@ export default function Network() {
                   </div>
                 </div>
 
-                {/* Programming Languages */}
                 <div className="mb-6">
                   <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                     Programming Languages
@@ -221,7 +243,7 @@ export default function Network() {
                         <Checkbox
                           id={skill}
                           checked={filters.skills.includes(skill)}
-                          onCheckedChange={(checked) => 
+                          onCheckedChange={(checked) =>
                             handleSkillChange(skill, checked as boolean)
                           }
                         />
@@ -233,7 +255,6 @@ export default function Network() {
                   </div>
                 </div>
 
-                {/* Status */}
                 <div className="mb-6">
                   <Label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
                     Status
@@ -243,7 +264,7 @@ export default function Network() {
                       <Checkbox
                         id="openToCollab"
                         checked={filters.openToCollaborate}
-                        onCheckedChange={(checked) => 
+                        onCheckedChange={(checked) =>
                           handleFilterChange("openToCollaborate", checked as boolean)
                         }
                       />
@@ -255,7 +276,7 @@ export default function Network() {
                       <Checkbox
                         id="online"
                         checked={filters.isOnline}
-                        onCheckedChange={(checked) => 
+                        onCheckedChange={(checked) =>
                           handleFilterChange("isOnline", checked as boolean)
                         }
                       />
@@ -316,7 +337,7 @@ export default function Network() {
                   </div>
                 </div>
 
-                {isLoading ? (
+                {isLoadingData ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {[...Array(6)].map((_, i) => (
                       <div key={i} className="h-64 bg-gray-200 dark:bg-gray-700 rounded-lg animate-pulse"></div>
@@ -330,12 +351,12 @@ export default function Network() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {sortedUsers.map((user) => (
                       <DeveloperCard
-                        key={user._id}
+                        key={user.id}
                         user={user}
-                        currentUserId="current" // TODO: Get from auth context
-                        onConnect={handleConnect}
+                        currentUserId={currentUserId ?? undefined}
+                        connectionStatus={getConnectionStatus(user)}
+                        onConnect={openConnectionModal}
                         onMessage={(userId) => console.log("Message", userId)}
-                        // FIX: Replaced console.log with the new navigation handler.
                         onViewProfile={handleViewProfile}
                       />
                     ))}
@@ -347,13 +368,16 @@ export default function Network() {
         </div>
       </div>
 
-      <ConnectionModal
-        isOpen={showConnectionModal}
-        onClose={() => setShowConnectionModal(false)}
-        targetUser={selectedUser}
-        onSendRequest={handleSendRequest}
-        isLoading={sendConnectionMutation.isPending}
-      />
+      {/* Connection Modal */}
+      {selectedUserForModal && (
+        <ConnectionModal
+          isOpen={showConnectionModal}
+          onClose={closeConnectionModal}
+          targetUser={selectedUserForModal}
+          onSendRequest={submitConnectionRequest}
+          isLoading={isSendingRequest}
+        />
+      )}
     </div>
   );
 }

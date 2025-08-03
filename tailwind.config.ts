@@ -61,6 +61,15 @@ export default {
           border: "var(--sidebar-border)",
           ring: "var(--sidebar-ring)",
         },
+        // Add brand colors to Tailwind config
+        brand: {
+          blue: "var(--brand-blue)",
+          "blue-dark": "var(--brand-blue-dark)",
+          emerald: "var(--brand-emerald)",
+          "emerald-dark": "var(--brand-emerald-dark)",
+          amber: "var(--brand-amber)",
+          "amber-dark": "var(--brand-amber-dark)",
+        },
       },
       keyframes: {
         "accordion-down": {

@@ -8,7 +8,7 @@
     "module": "ESNext",
     "strict": true,
     "lib": ["esnext", "dom", "dom.iterable"],
-    "jsx": "preserve",
+    "jsx": "react-jsx", // <--- THIS IS THE FIX
     "esModuleInterop": true,
     "skipLibCheck": true,
     "allowImportingTsExtensions": true,
