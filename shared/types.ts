@@ -1,6 +1,6 @@
-// Shared types for frontend and backend compatibility
+// Shared types for frontend and backend compatibility - PostgreSQL Model
 export interface User {
-  _id: string;
+  id: number;
   username: string;
   email: string;
   password: string;
@@ -14,27 +14,27 @@ export interface User {
   isOnline: boolean;
   openToCollaborate: boolean;
   lastSeen?: Date;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface Connection {
-  _id: string;
-  requesterId: string;
-  receiverId: string;
+  id: number;
+  requesterId: number;
+  receiverId: number;
   status: "pending" | "accepted" | "declined";
   message?: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface Message {
-  _id: string;
-  senderId: string;
-  receiverId: string;
+  id: number;
+  senderId: number;
+  receiverId: number;
   content: string;
   isRead: boolean;
-  createdAt: Date;
+  createdAt?: Date;
 }
 
 export interface Conversation {
@@ -59,15 +59,15 @@ export interface InsertUser {
 }
 
 export interface InsertConnection {
-  requesterId: string;
-  receiverId: string;
+  requesterId: number;
+  receiverId: number;
   status: "pending" | "accepted" | "declined";
   message?: string;
 }
 
 export interface InsertMessage {
-  senderId: string;
-  receiverId: string;
+  senderId: number;
+  receiverId: number;
   content: string;
 }
 
@@ -91,4 +91,7 @@ export interface SearchUsers {
   skills?: string[];
   openToCollaborate?: boolean;
   isOnline?: boolean;
-} 
+}
+
+// Connection status type
+export type ConnectionStatus = 'none' | 'pending' | 'connected';
