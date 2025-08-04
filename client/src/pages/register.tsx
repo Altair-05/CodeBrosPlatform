@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { X, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { getApiErrorMessage } from "@/lib/utils";
 
 const SKILLS_OPTIONS = [
   "JavaScript", "TypeScript", "React", "Vue", "Angular", "Node.js", "Python", "Java", "C#", "C++",
@@ -60,10 +61,10 @@ export default function Register() {
       });
       setLocation('/');
     },
-    onError: (error: any) => {
+    onError: (error) => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to create account. Please try again.",
+        title: "Registration Failed",
+        description: getApiErrorMessage(error),
         variant: "destructive",
       });
     },
@@ -238,7 +239,7 @@ export default function Register() {
                 </div>
                 <div className="flex flex-wrap gap-1">
                   {SKILLS_OPTIONS.slice(0, 20).map((skill) => (
-                    <button
+                    <Button
                       key={skill}
                       type="button"
                       onClick={() => {
@@ -253,7 +254,7 @@ export default function Register() {
                       }`}
                     >
                       {skill}
-                    </button>
+                    </Button>
                   ))}
                 </div>
               </div>
@@ -297,4 +298,4 @@ export default function Register() {
       </div>
     </div>
   );
-} 
+}

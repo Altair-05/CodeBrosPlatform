@@ -1,22 +1,26 @@
 # 🚀 CodeBrosPlatform
 
-A modern **LinkedIn-style networking platform for developers**, built with **React**, **TypeScript**, and **Express.js**.
+A modern **LinkedIn-style networking platform for developers**, built with **React**, **TypeScript**, **Express.js**, and **MongoDB**.
 **CodeBros** empowers developers to **connect**, **collaborate**, and **grow together** in a clean, responsive, and developer-focused environment.
 
 ---
 
 ## 📚 Table of Contents
 
-* [📖 About](#-about)
-* [✨ Features](#-features)
-* [🗂 Project Structure](#-project-structure)
-* [⚙️ Prerequisites](#️-prerequisites)
-* [🚀 Installation & Setup](#-installation--setup)
-* [🛠 Usage](#-usage)
-* [📜 Available Scripts](#-available-scripts)
-* [🤝 Contributing](#-contributing)
-* [❓ FAQ](#-faq)
-* [📄 License](#-license)
+- [🚀 CodeBrosPlatform](#-codebrosplatform)
+  - [📚 Table of Contents](#-table-of-contents)
+  - [📖 About](#-about)
+  - [✨ Features](#-features)
+  - [🗂 Project Structure](#-project-structure)
+  - [⚙️ Prerequisites](#️-prerequisites)
+  - [🚀 Installation \& Setup](#-installation--setup)
+  - [🛠 Usage](#-usage)
+  - [📜 Available Scripts](#-available-scripts)
+  - [🤝 Contributing](#-contributing)
+    - [Quick Start:](#quick-start)
+  - [❓ FAQ](#-faq)
+  - [📄 License](#-license)
+  - [🙌 Support the Project](#-support-the-project)
 
 ---
 
@@ -24,7 +28,7 @@ A modern **LinkedIn-style networking platform for developers**, built with **Rea
 
 **CodeBrosPlatform** is a developer-centric professional networking platform inspired by LinkedIn. It provides a place for developers to showcase their skills, grow their network, and collaborate on exciting projects — all in a stylish, theme-switchable interface powered by a modern tech stack.
 
-Built for **rapid prototyping**, the platform uses **in-memory storage**, meaning no database setup is needed — just clone, run, and explore!
+Built with **MongoDB** for persistent data storage, the platform provides robust data management with full type safety and optimized performance for production use.
 
 ---
 
@@ -35,7 +39,9 @@ Built for **rapid prototyping**, the platform uses **in-memory storage**, meanin
 🤝 **Connections** — Send, accept, and manage connection requests
 🌗 **Theme Switcher** — Toggle between dark and light modes
 📱 **Fully Responsive** — Smooth experience across desktop and mobile
-⚡ **Instant Setup** — No database required; runs on in-memory data
+🗄️ **MongoDB Backend** — Persistent data storage with optimized indexing
+⚡ **Type Safety** — Full TypeScript support with Zod validation
+🔒 **Production Ready** — Scalable architecture with proper error handling
 
 ---
 
@@ -53,10 +59,13 @@ CodeBrosPlatform/
 ├── server/                # Express backend
 │   ├── index.ts           # Main server entry point
 │   ├── routes.ts          # API route handlers
-│   ├── db.ts              # In-memory database
-│   └── storage.ts         # File storage simulation
+│   ├── db/                # Database layer
+│   │   ├── mongo.ts       # MongoDB storage implementation
+│   │   └── seed.ts        # Database seeder with sample data
+│   └── storage.ts         # File storage implementation
 ├── shared/                # Shared types and schemas
-│   └── schema.ts
+│   ├── types.ts           # TypeScript type definitions
+│   └── mongo-schema.ts    # Zod schemas for validation
 ├── dev.bat                # Windows development startup script
 ├── start.bat              # Windows production startup script
 ├── drizzle.config.ts      # ORM config (optional/future use)
@@ -72,6 +81,7 @@ CodeBrosPlatform/
 Before getting started, make sure you have the following installed:
 
 * [Node.js](https://nodejs.org/) (v18 or higher)
+* [MongoDB](https://www.mongodb.com/) (v5.0 or higher) or [MongoDB Atlas](https://www.mongodb.com/atlas) account
 * [Git](https://git-scm.com/)
 
 ---
@@ -91,21 +101,57 @@ cd CodeBrosPlatform
 npm install
 ```
 
-3. **Start the Development Server**
+3. **Set Up MongoDB**
 
-* **Windows (Recommended)**
+   **Option A: Local MongoDB**
+   ```bash
+   # Install MongoDB locally (varies by OS)
+   # Windows: choco install mongodb
+   # macOS: brew install mongodb-community
+   # Linux: sudo apt-get install mongodb
+   
+   # Start MongoDB service
+   mongod
+   ```
 
-  ```bash
-  dev.bat
-  ```
+   **Option B: MongoDB Atlas (Recommended for production)**
+   - Create account at [MongoDB Atlas](https://www.mongodb.com/atlas)
+   - Create a new cluster
+   - Get your connection string
 
-* **Cross-platform Manual Start**
+4. **Configure Environment**
 
-  ```bash
-  set NODE_ENV=development && tsx server/index.ts
-  ```
+   Create a `.env` file in the root directory:
+   ```bash
+   # Local MongoDB
+   MONGODB_URI=mongodb://localhost:27017
+   MONGODB_DB_NAME=codebros
+   NODE_ENV=development
+   PORT=5000
+   
+   # Or for MongoDB Atlas
+   # MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/codebros?retryWrites=true&w=majority
+   ```
 
-4. **Access the App**
+5. **Seed the Database**
+
+   ```bash
+   npm run db:seed
+   ```
+
+6. **Start the Development Server**
+
+   * **Windows (Recommended)**
+     ```bash
+     dev.bat
+     ```
+
+   * **Cross-platform Manual Start**
+     ```bash
+     set NODE_ENV=development && tsx server/index.ts
+     ```
+
+7. **Access the App**
    Open your browser and go to:
    [http://localhost:5000](http://localhost:5000)
 
@@ -124,12 +170,13 @@ npm install
 
 ## 📜 Available Scripts
 
-| Script          | Description                          |
-| --------------- | ------------------------------------ |
-| `dev.bat`       | Starts dev server (Windows-friendly) |
-| `start.bat`     | Starts production build (Windows)    |
-| `npm run build` | Builds frontend for production       |
-| `npm run check` | Type-check using TypeScript          |
+| Script            | Description                          |
+| ----------------- | ------------------------------------ |
+| `dev.bat`         | Starts dev server (Windows-friendly) |
+| `start.bat`       | Starts production build (Windows)    |
+| `npm run build`   | Builds frontend for production       |
+| `npm run check`   | Type-check using TypeScript          |
+| `npm run db:seed` | Seeds MongoDB with sample data       |
 
 ---
 
@@ -160,15 +207,23 @@ Check out the [CONTRIBUTION.md](CONTRIBUTION.md) for full guidelines.
 
 **Q: Is this production-ready?**
 
-> Not yet — it uses in-memory storage for rapid development. To go live, integrate a real database (e.g., PostgreSQL, MongoDB).
+> Yes! The platform uses a persistent MongoDB backend with proper indexing, type safety, and error handling. It's designed for scalability and production deployment.
 
 **Q: How do I reset all data?**
 
-> Simply restart the server. All data is stored in-memory and will be wiped.
+> You can drop the MongoDB database or run the seeder again. For local development: `mongo codebros --eval "db.dropDatabase()"` then `npm run db:seed`.
 
 **Q: Can I use this for my own startup or project?**
 
 > Yes! Just remember to provide attribution to the original repository.
+
+**Q: Do I need MongoDB Atlas or can I use local MongoDB?**
+
+> Both work! Local MongoDB is fine for development, but MongoDB Atlas is recommended for production deployment.
+
+**Q: How do I add new database features?**
+
+> Update the schemas in `shared/mongo-schema.ts`, add methods to `server/db/mongo.ts`, update routes, and run migrations if needed.
 
 ---
 
@@ -186,6 +241,8 @@ If you found this project helpful or interesting, please consider giving it a �
 
 ---
 
-**Let’s Code. Connect. Collaborate. 🚀**
+**Let's Code. Connect. Collaborate. 🚀**
 
 ---
+
+git commit -m "docs: update readme to reflect mongodb backend Corrects outdated references to "in-memory storage" in the main README file, accurately reflecting the project's persistent MongoDB implementation."

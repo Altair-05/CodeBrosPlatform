@@ -5,6 +5,39 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+/**
+ * Safely extracts the error message from an API error response.
+ * 
+ * @param error - The error object from an API request (type unknown for safety)
+ * @returns A string containing either the error message or a generic fallback
+ * 
+ * @example
+ * ```typescript
+ * // In a mutation's onError handler:
+ * onError: (error) => {
+ *   toast({
+ *     title: "Error",
+ *     description: getApiErrorMessage(error),
+ *     variant: "destructive",
+ *   });
+ * }
+ * ```
+ */
+export function getApiErrorMessage(error: unknown): string {
+  // Check if error is an object and has a message property that is a string
+  if (
+    error &&
+    typeof error === "object" &&
+    "message" in error &&
+    typeof error.message === "string"
+  ) {
+    return error.message;
+  }
+  
+  // Fallback for any other error types
+  return "An unexpected error occurred. Please try again.";
+}
+
 export function formatTimeAgo(date: Date | string): string {
   const now = new Date();
   const dateObj = typeof date === 'string' ? new Date(date) : date;
