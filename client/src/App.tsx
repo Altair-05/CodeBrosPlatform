@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AuthProvider } from "@/contexts/auth-context";
-import { HeaderWithNotifications } from "@/components/header-with-notifications"; // IMPORT THE NEW WRAPPER
+import { Header } from "@/components/header"; // ✅ FIXED IMPORT
 import Home from "@/pages/home";
 import Network from "@/pages/network";
 import Profile from "@/pages/profile";
@@ -32,7 +32,8 @@ function Router() {
 }
 
 function App() {
-  const [notificationCount,setnotificationCount]=useState<number>(0);
+  const [notificationCount, setNotificationCount] = useState<number>(0);
+  
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="light" storageKey="codebros-ui-theme">
@@ -40,7 +41,8 @@ function App() {
           <TooltipProvider>
             <div className="min-h-screen bg-background">
               <Header 
-                notificationCount={3}
+                notificationCount={notificationCount}
+                setnotificationCount={setNotificationCount} // ✅ FIXED MISSING PROP
                 onSearch={(query) => console.log("Search:", query)}
               />
               <main>
