@@ -1,16 +1,72 @@
-import { 
-  users, 
-  connections, 
-  messages,
-  type User, 
-  type InsertUser, 
-  type Connection, 
-  type InsertConnection,
-  type Message,
-  type InsertMessage,
-  type UpdateUser,
-  type SearchUsers
+import type {
+  User,
+  InsertUser,
+  Connection,
+  InsertConnection,
+  Message,
+  InsertMessage,
+  UpdateUser,
+  SearchUsers
 } from "@shared/schema";
+
+import { MongoClient, Db } from "mongodb";
+
+// --- Mongo wiring for server code that needs a direct db handle ---
+let __mongoClient: MongoClient | null = null;
+let __db: Db | null = null;
+
+const DEFAULT_URI = process.env.MONGODB_URI || process.env.MONGO_URI || "mongodb://127.0.0.1:27017";
+const DEFAULT_DB  = process.env.MONGODB_DB_NAME || process.env.MONGO_DB_NAME || "codebros";
+
+/**
+ * Connect once and cache the Db handle.
+ * If already connected, returns the cached Db.
+ */
+export async function connect(uri: string = DEFAULT_URI, dbName: string = DEFAULT_DB): Promise<Db> {
+  if (__db) return __db;
+  if (!__mongoClient) {
+    __mongoClient = new MongoClient(uri);
+  }
+  await __mongoClient.connect();
+  __db = __mongoClient.db(dbName);
+  return __db;
+}
+
+/**
+ * Register an externally created client. Also caches a Db using env DB name.
+ */
+export function setClient(client: MongoClient, dbName?: string) {
+  __mongoClient = client;
+  const name = dbName || DEFAULT_DB;
+  __db = client.db(name);
+}
+
+/**
+ * Get the active Db. Throws if not connected so callers can handle it.
+ */
+export function getDb(): Db {
+  if (!__db) {
+    throw new Error("MongoDB not initialized. Call connect() first. (Checked env: MONGODB_URI/MONGO_URI, MONGODB_DB_NAME/MONGO_DB_NAME)");
+  }
+  return __db;
+}
+
+/** (Optional) expose the client for diagnostics */
+export function getClient(): MongoClient | null {
+  return __mongoClient;
+}
+
+/** Gracefully close the Mongo client (useful for tests) */
+export async function disconnect(): Promise<void> {
+  try {
+    if (__mongoClient) {
+      await __mongoClient.close();
+    }
+  } finally {
+    __mongoClient = null;
+    __db = null;
+  }
+}
 
 export interface IStorage {
   // User operations
@@ -150,7 +206,7 @@ export class MemStorage implements IStorage {
       skills: insertUser.skills || [],
       profileImage: insertUser.profileImage || null,
       isOnline: false,
-      openToCollaborate: insertUser.openToCollaborate || true,
+      openToCollaborate: insertUser.openToCollaborate ?? false,
       lastSeen: new Date()
     };
     this.users.set(id, user);
