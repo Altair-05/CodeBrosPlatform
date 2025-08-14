@@ -62,10 +62,9 @@ app.use((req, res, next) => {
       serveStatic(app);
     }
 
-    // ALWAYS serve the app on port 5000
-    // this serves both the API and the client.
-    // It is the only port that is not firewalled.
-    const port = 5000;
+    // Serve on the PORT env var when provided (e.g., PORT=5001 for local dev),
+    // defaulting to 5000 to keep compatibility with existing deployments.
+    const port = Number(process.env.PORT ?? 5000);
     server.listen(port, () => {
       log(`serving on port ${port}`);
     });
@@ -84,7 +83,8 @@ app.use((req, res, next) => {
     });
 
   } catch (error) {
-    log("Failed to start server:", error);
+    const errMsg = error instanceof Error ? error.message : String(error);
+    log(`Failed to start server: ${errMsg}`);
     process.exit(1);
   }
 })();

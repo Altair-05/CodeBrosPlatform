@@ -11,7 +11,6 @@ import {
   searchUsersSchema
 } from "@shared/mongo-schema";
 import { z } from "zod";
-import { ObjectId } from 'mongodb'; // ADDED: Import ObjectId for database queries
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -128,23 +127,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
  
   app.get("/api/notifications/count", async (req, res) => {
     try {
-       
       const userId = (req as any).user?.id;
-
       if (!userId) {
         return res.status(401).json({ count: 0, message: "Unauthorized" });
       }
-      
-      const db = mongoStorage.getDb();
-      const messagesCollection = db.collection("messages");
-
-      const unreadCount = await messagesCollection.countDocuments({
-        receiverId: new ObjectId(userId),
-        isRead: false,
-      });
-
+      // Use storage API instead of raw DB handle
+      const unreadGroups = await mongoStorage.getLastUnreadMessagesGroupedBySender(userId);
+      const unreadCount = Array.isArray(unreadGroups) ? unreadGroups.length : 0;
       res.status(200).json({ count: unreadCount });
-      
     } catch (error) {
       console.error("Error fetching notification count:", error);
       res.status(500).json({ message: "Internal server error" });
@@ -308,7 +298,68 @@ app.get("/api/messages/unread/:userId", async (req, res) => {
     }
   });
 
+  // Mutual Connections: intersection of accepted connections for viewer and profile
+  // GET /api/users/:profileId/mutuals?skip=0&limit=20
+  // Auth note: Uses req.user.id if available, otherwise accepts ?viewerId=<id> for local testing
+  app.get("/api/users/:profileId/mutuals", async (req, res) => {
+    try {
+      const viewerIdStr = (req as any).user?.id || (typeof req.query.viewerId === 'string' ? req.query.viewerId : undefined);
+      if (!viewerIdStr) {
+        return res.status(400).json({ message: "viewerId is required (use auth or pass ?viewerId=)" });
+      }
+
+      const profileIdStr = String(req.params.profileId);
+      const limit = Math.min(parseInt(String(req.query.limit ?? 20), 10), 50);
+      const skip  = Math.max(parseInt(String(req.query.skip ?? 0), 10), 0);
+
+      // Fetch accepted connections for both users using storage helpers
+      const [viewerCons, profileCons] = await Promise.all([
+        mongoStorage.getAcceptedConnections(viewerIdStr),
+        mongoStorage.getAcceptedConnections(profileIdStr)
+      ]);
+
+      // Helper to find the other party id for a given connection
+      const otherParty = (c: any, selfId: string) => {
+        const reqId = (c.requesterId && c.requesterId.toString) ? c.requesterId.toString() : String(c.requesterId);
+        const recId = (c.receiverId && c.receiverId.toString) ? c.receiverId.toString() : String(c.receiverId);
+        return reqId === selfId ? recId : reqId;
+      };
+
+      const viewerSet = new Set<string>(viewerCons.map((c: any) => otherParty(c, viewerIdStr)));
+      const profileSet = new Set<string>(profileCons.map((c: any) => otherParty(c, profileIdStr)));
+
+      // Intersection (avoid for..of on Set to work with lower TS targets)
+      const mutualIdsAll: string[] = Array.from(viewerSet).filter((id) => profileSet.has(id));
+
+      // Pagination
+      const pagedIds = mutualIdsAll.slice(skip, skip + limit);
+
+      // Fetch minimal user profiles for the mutual ids
+      const users = await Promise.all(
+        pagedIds.map(async (uid) => {
+          const u = await mongoStorage.getUser(uid);
+          if (!u) return null;
+          return {
+            _id: (u._id && u._id.toString) ? u._id.toString() : String(u._id),
+            name: (u as any).name,
+            username: (u as any).username,
+            avatar: (u as any).avatar,
+            headline: (u as any).headline,
+            location: (u as any).location,
+          };
+        })
+      );
+
+      res.json({
+        data: users.filter(Boolean),
+        pagination: { skip, limit }
+      });
+    } catch (error) {
+      console.error("/mutuals error", error);
+      res.status(500).json({ message: "Failed to fetch mutual connections" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
-

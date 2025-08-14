@@ -24,11 +24,13 @@ import {
 import { useEffect } from "react";
 import React, { useState } from 'react';
 import MCard from "../components/MCard";
+import MutualConnectionsList from "@/components/MutualConnectionsList";
 export default function Profile() {
   const { id } = useParams<{ id: string }>();
   const userId = id || "current";
   const [isOpen, setIsOpen] = useState(false);
   const [message, setMessage] = useState("");
+  const [showMutuals, setShowMutuals] = useState(false);
 
 
   // FIX 4: Scroll to the top of the page when the component mounts or the ID changes.
@@ -334,27 +336,13 @@ export default function Profile() {
                 <CardTitle>Mutual Connections</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-3">
-                    <Avatar className="w-8 h-8">
-                      <AvatarFallback className="text-xs">JD</AvatarFallback>
-                    </Avatar>
-                    <span className="text-sm text-gray-600 dark:text-gray-400">
-                      John Doe
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <Avatar className="w-8 h-8">
-                      <AvatarFallback className="text-xs">JS</AvatarFallback>
-                    </Avatar>
-                    <span className="text-sm text-gray-600 dark:text-gray-400">
-                      Jane Smith
-                    </span>
-                  </div>
-                  <Button variant="ghost" size="sm" className="w-full">
+                {showMutuals ? (
+                  <MutualConnectionsList profileId={userId} />
+                ) : (
+                  <Button variant="ghost" size="sm" className="w-full" onClick={() => setShowMutuals(true)}>
                     View all mutual connections
                   </Button>
-                </div>
+                )}
               </CardContent>
             </Card>
           </div>
