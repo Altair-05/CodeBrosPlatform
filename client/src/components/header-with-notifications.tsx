@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNotifications } from '../hooks/useNotifications';
 import { Header } from './header';
@@ -9,7 +8,7 @@ export const HeaderWithNotifications = () => {
   return (
     <Header
       notificationCount={notificationCount}
-      onSearch={(query) => console.log("Search:", query)}
+      onSearch={query => console.log('Search:', query)}
     />
   );
 };

@@ -1,20 +1,20 @@
-import { useState } from "react";
-import { useLocation } from "wouter";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { useAuth } from "@/contexts/auth-context";
-import { useToast } from "@/hooks/use-toast";
-import { Eye, EyeOff, Mail, Lock } from "lucide-react";
+import { useState } from 'react';
+import { useLocation } from 'wouter';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useAuth } from '@/contexts/auth-context';
+import { useToast } from '@/hooks/use-toast';
+import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
 
 export default function Login() {
   const { login } = useAuth();
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   const [formData, setFormData] = useState({
-    email: "",
-    password: "",
+    email: '',
+    password: '',
   });
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -25,25 +25,25 @@ export default function Login() {
 
     try {
       const success = await login(formData.email, formData.password);
-      
+
       if (success) {
         toast({
-          title: "Welcome back!",
-          description: "You have successfully logged in.",
+          title: 'Welcome back!',
+          description: 'You have successfully logged in.',
         });
-        setLocation("/");
+        setLocation('/');
       } else {
         toast({
-          title: "Login failed",
-          description: "Please check your email and password.",
-          variant: "destructive",
+          title: 'Login failed',
+          description: 'Please check your email and password.',
+          variant: 'destructive',
         });
       }
     } catch (error) {
       toast({
-        title: "Error",
-        description: "An error occurred during login. Please try again.",
-        variant: "destructive",
+        title: 'Error',
+        description: 'An error occurred during login. Please try again.',
+        variant: 'destructive',
       });
     } finally {
       setIsLoading(false);
@@ -74,7 +74,7 @@ export default function Login() {
                     id="email"
                     type="email"
                     value={formData.email}
-                    onChange={(e) => handleInputChange("email", e.target.value)}
+                    onChange={e => handleInputChange('email', e.target.value)}
                     placeholder="Enter your email"
                     className="pl-10"
                     required
@@ -88,9 +88,11 @@ export default function Login() {
                   <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
                     id="password"
-                    type={showPassword ? "text" : "password"}
+                    type={showPassword ? 'text' : 'password'}
                     value={formData.password}
-                    onChange={(e) => handleInputChange("password", e.target.value)}
+                    onChange={e =>
+                      handleInputChange('password', e.target.value)
+                    }
                     placeholder="Enter your password"
                     className="pl-10 pr-10"
                     required
@@ -105,20 +107,16 @@ export default function Login() {
                 </div>
               </div>
 
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={isLoading}
-              >
-                {isLoading ? "Signing In..." : "Sign In"}
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? 'Signing In...' : 'Sign In'}
               </Button>
 
               <div className="text-center space-y-2">
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Don't have an account?{" "}
+                  Don't have an account?{' '}
                   <button
                     type="button"
-                    onClick={() => setLocation("/register")}
+                    onClick={() => setLocation('/register')}
                     className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
                   >
                     Sign up
@@ -126,7 +124,7 @@ export default function Login() {
                 </p>
                 <button
                   type="button"
-                  onClick={() => setLocation("/")}
+                  onClick={() => setLocation('/')}
                   className="text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
                 >
                   ← Back to Home
@@ -138,4 +136,4 @@ export default function Login() {
       </div>
     </div>
   );
-} 
+}

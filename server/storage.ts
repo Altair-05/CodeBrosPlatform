@@ -1,16 +1,16 @@
-import { 
-  users, 
-  connections, 
+import {
+  users,
+  connections,
   messages,
-  type User, 
-  type InsertUser, 
-  type Connection, 
+  type User,
+  type InsertUser,
+  type Connection,
   type InsertConnection,
   type Message,
   type InsertMessage,
   type UpdateUser,
-  type SearchUsers
-} from "@shared/schema";
+  type SearchUsers,
+} from '@shared/schema';
 
 export interface IStorage {
   // User operations
@@ -24,17 +24,25 @@ export interface IStorage {
   setUserOnlineStatus(id: number, isOnline: boolean): Promise<void>;
 
   // Connection operations
-  getConnection(requesterId: number, receiverId: number): Promise<Connection | undefined>;
+  getConnection(
+    requesterId: number,
+    receiverId: number
+  ): Promise<Connection | undefined>;
   getConnectionsByUserId(userId: number): Promise<Connection[]>;
   getPendingConnectionRequests(userId: number): Promise<Connection[]>;
   createConnection(connection: InsertConnection): Promise<Connection>;
-  updateConnectionStatus(id: number, status: string): Promise<Connection | undefined>;
+  updateConnectionStatus(
+    id: number,
+    status: string
+  ): Promise<Connection | undefined>;
   getAcceptedConnections(userId: number): Promise<User[]>;
 
   // Message operations
   createMessage(message: InsertMessage): Promise<Message>;
   getMessagesBetweenUsers(user1Id: number, user2Id: number): Promise<Message[]>;
-  getConversations(userId: number): Promise<Array<{ user: User; lastMessage: Message; unreadCount: number }>>;
+  getConversations(
+    userId: number
+  ): Promise<Array<{ user: User; lastMessage: Message; unreadCount: number }>>;
   markMessagesAsRead(senderId: number, receiverId: number): Promise<void>;
 }
 
@@ -61,61 +69,65 @@ export class MemStorage implements IStorage {
   private initializeSampleData() {
     const sampleUsers: Omit<User, 'id'>[] = [
       {
-        username: "Dakshata_Borse",
-        email: "Dakshata@example.com",
-        password: "password123",
-        firstName: "Dakshata",
-        lastName: "Borse",
-        title: "Full-Stack Developer",
-        bio: "Passionate about React, Node.js, and building scalable web applications. Currently working on open-source projects and mentoring junior developers.",
-        experienceLevel: "intermediate",
-        skills: ["React", "TypeScript", "Node.js", "PostgreSQL"],
-        profileImage: "https://images.unsplash.com/photo-1536625979259-edbae645c7c3?q=80&w=688&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        username: 'Dakshata_Borse',
+        email: 'Dakshata@example.com',
+        password: 'password123',
+        firstName: 'Dakshata',
+        lastName: 'Borse',
+        title: 'Full-Stack Developer',
+        bio: 'Passionate about React, Node.js, and building scalable web applications. Currently working on open-source projects and mentoring junior developers.',
+        experienceLevel: 'intermediate',
+        skills: ['React', 'TypeScript', 'Node.js', 'PostgreSQL'],
+        profileImage:
+          'https://images.unsplash.com/photo-1536625979259-edbae645c7c3?q=80&w=688&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
         isOnline: true,
         openToCollaborate: true,
         lastSeen: new Date(),
       },
       {
-        username: "Meghana_khotare",
-        email: "meghana@example.com",
-        password: "password123",
-        firstName: "meghana",
-        lastName: "khotare",
-        title: "Backend Engineer",
-        bio: "Specializing in Python, Django, and cloud architecture. Love working on API design and database optimization. Always eager to learn new technologies.",
-        experienceLevel: "intermediate",
-        skills: ["Python", "Django", "AWS", "Docker"],
-        profileImage: "https://images.unsplash.com/photo-1592188657297-c6473609e988?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        username: 'Meghana_khotare',
+        email: 'meghana@example.com',
+        password: 'password123',
+        firstName: 'meghana',
+        lastName: 'khotare',
+        title: 'Backend Engineer',
+        bio: 'Specializing in Python, Django, and cloud architecture. Love working on API design and database optimization. Always eager to learn new technologies.',
+        experienceLevel: 'intermediate',
+        skills: ['Python', 'Django', 'AWS', 'Docker'],
+        profileImage:
+          'https://images.unsplash.com/photo-1592188657297-c6473609e988?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
         isOnline: false,
         openToCollaborate: true,
         lastSeen: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
       },
       {
-        username: "Visishta",
-        email: "Visishta@example.com",
-        password: "password123",
-        firstName: "Visishta",
-        lastName: "B",
-        title: "Frontend Developer",
-        bio: "New to the field but very enthusiastic! Learning React and JavaScript. Looking for mentorship and collaboration opportunities on beginner-friendly projects.",
-        experienceLevel: "beginner",
-        skills: ["JavaScript", "React", "HTML/CSS", "Git"],
-        profileImage: "https://images.unsplash.com/photo-1631947430066-48c30d57b943?q=80&w=716&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        username: 'Visishta',
+        email: 'Visishta@example.com',
+        password: 'password123',
+        firstName: 'Visishta',
+        lastName: 'B',
+        title: 'Frontend Developer',
+        bio: 'New to the field but very enthusiastic! Learning React and JavaScript. Looking for mentorship and collaboration opportunities on beginner-friendly projects.',
+        experienceLevel: 'beginner',
+        skills: ['JavaScript', 'React', 'HTML/CSS', 'Git'],
+        profileImage:
+          'https://images.unsplash.com/photo-1631947430066-48c30d57b943?q=80&w=716&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
         isOnline: false,
         openToCollaborate: true,
         lastSeen: new Date(Date.now() - 2 * 60 * 60 * 1000),
       },
       {
-        username: "Komal",
-        email: "Komal@example.com",
-        password: "password123",
-        firstName: "Komal",
-        lastName: "S",
-        title: "DevOps Engineer",
-        bio: "Infrastructure specialist with expertise in Kubernetes, CI/CD, and cloud platforms. Passionate about automation and helping teams ship faster.",
-        experienceLevel: "professional",
-        skills: ["Kubernetes", "Docker", "Jenkins", "Terraform"],
-        profileImage: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100",
+        username: 'Komal',
+        email: 'Komal@example.com',
+        password: 'password123',
+        firstName: 'Komal',
+        lastName: 'S',
+        title: 'DevOps Engineer',
+        bio: 'Infrastructure specialist with expertise in Kubernetes, CI/CD, and cloud platforms. Passionate about automation and helping teams ship faster.',
+        experienceLevel: 'professional',
+        skills: ['Kubernetes', 'Docker', 'Jenkins', 'Terraform'],
+        profileImage:
+          'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&auto=format&fit=crop&w=100&h=100',
         isOnline: true,
         openToCollaborate: false,
         lastSeen: new Date(),
@@ -134,7 +146,9 @@ export class MemStorage implements IStorage {
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(user => user.username === username);
+    return Array.from(this.users.values()).find(
+      user => user.username === username
+    );
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
@@ -143,15 +157,15 @@ export class MemStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.currentUserId++;
-    const user: User = { 
-      ...insertUser, 
+    const user: User = {
+      ...insertUser,
       id,
       bio: insertUser.bio || null,
       skills: insertUser.skills || [],
       profileImage: insertUser.profileImage || null,
       isOnline: false,
       openToCollaborate: insertUser.openToCollaborate || true,
-      lastSeen: new Date()
+      lastSeen: new Date(),
     };
     this.users.set(id, user);
     return user;
@@ -171,31 +185,39 @@ export class MemStorage implements IStorage {
 
     if (criteria.query) {
       const query = criteria.query.toLowerCase();
-      users = users.filter(user => 
-        user.firstName.toLowerCase().includes(query) ||
-        user.lastName.toLowerCase().includes(query) ||
-        user.title.toLowerCase().includes(query) ||
-        user.bio?.toLowerCase().includes(query) ||
-        (user.skills && user.skills.some(skill => skill.toLowerCase().includes(query)))
+      users = users.filter(
+        user =>
+          user.firstName.toLowerCase().includes(query) ||
+          user.lastName.toLowerCase().includes(query) ||
+          user.title.toLowerCase().includes(query) ||
+          user.bio?.toLowerCase().includes(query) ||
+          (user.skills &&
+            user.skills.some(skill => skill.toLowerCase().includes(query)))
       );
     }
 
     if (criteria.experienceLevel && criteria.experienceLevel.length > 0) {
-      users = users.filter(user => criteria.experienceLevel!.includes(user.experienceLevel));
+      users = users.filter(user =>
+        criteria.experienceLevel!.includes(user.experienceLevel)
+      );
     }
 
     if (criteria.skills && criteria.skills.length > 0) {
-      users = users.filter(user => 
-        user.skills && criteria.skills!.some(skill => 
-          user.skills!.some(userSkill => 
-            userSkill.toLowerCase().includes(skill.toLowerCase())
+      users = users.filter(
+        user =>
+          user.skills &&
+          criteria.skills!.some(skill =>
+            user.skills!.some(userSkill =>
+              userSkill.toLowerCase().includes(skill.toLowerCase())
+            )
           )
-        )
       );
     }
 
     if (criteria.openToCollaborate !== undefined) {
-      users = users.filter(user => user.openToCollaborate === criteria.openToCollaborate);
+      users = users.filter(
+        user => user.openToCollaborate === criteria.openToCollaborate
+      );
     }
 
     if (criteria.isOnline !== undefined) {
@@ -219,26 +241,32 @@ export class MemStorage implements IStorage {
   }
 
   // Connection operations
-  async getConnection(requesterId: number, receiverId: number): Promise<Connection | undefined> {
-    return Array.from(this.connections.values()).find(conn => 
-      (conn.requesterId === requesterId && conn.receiverId === receiverId) ||
-      (conn.requesterId === receiverId && conn.receiverId === requesterId)
+  async getConnection(
+    requesterId: number,
+    receiverId: number
+  ): Promise<Connection | undefined> {
+    return Array.from(this.connections.values()).find(
+      conn =>
+        (conn.requesterId === requesterId && conn.receiverId === receiverId) ||
+        (conn.requesterId === receiverId && conn.receiverId === requesterId)
     );
   }
 
   async getConnectionsByUserId(userId: number): Promise<Connection[]> {
-    return Array.from(this.connections.values()).filter(conn => 
-      conn.requesterId === userId || conn.receiverId === userId
+    return Array.from(this.connections.values()).filter(
+      conn => conn.requesterId === userId || conn.receiverId === userId
     );
   }
 
   async getPendingConnectionRequests(userId: number): Promise<Connection[]> {
-    return Array.from(this.connections.values()).filter(conn => 
-      conn.receiverId === userId && conn.status === "pending"
+    return Array.from(this.connections.values()).filter(
+      conn => conn.receiverId === userId && conn.status === 'pending'
     );
   }
 
-  async createConnection(insertConnection: InsertConnection): Promise<Connection> {
+  async createConnection(
+    insertConnection: InsertConnection
+  ): Promise<Connection> {
     const id = this.currentConnectionId++;
     const connection: Connection = {
       ...insertConnection,
@@ -251,7 +279,10 @@ export class MemStorage implements IStorage {
     return connection;
   }
 
-  async updateConnectionStatus(id: number, status: string): Promise<Connection | undefined> {
+  async updateConnectionStatus(
+    id: number,
+    status: string
+  ): Promise<Connection | undefined> {
     const connection = this.connections.get(id);
     if (!connection) return undefined;
 
@@ -262,15 +293,19 @@ export class MemStorage implements IStorage {
   }
 
   async getAcceptedConnections(userId: number): Promise<User[]> {
-    const acceptedConnections = Array.from(this.connections.values()).filter(conn => 
-      (conn.requesterId === userId || conn.receiverId === userId) && conn.status === "accepted"
+    const acceptedConnections = Array.from(this.connections.values()).filter(
+      conn =>
+        (conn.requesterId === userId || conn.receiverId === userId) &&
+        conn.status === 'accepted'
     );
 
-    const connectedUserIds = acceptedConnections.map(conn => 
+    const connectedUserIds = acceptedConnections.map(conn =>
       conn.requesterId === userId ? conn.receiverId : conn.requesterId
     );
 
-    return connectedUserIds.map(id => this.users.get(id)).filter(Boolean) as User[];
+    return connectedUserIds
+      .map(id => this.users.get(id))
+      .filter(Boolean) as User[];
   }
 
   // Message operations
@@ -286,48 +321,74 @@ export class MemStorage implements IStorage {
     return message;
   }
 
-  async getMessagesBetweenUsers(user1Id: number, user2Id: number): Promise<Message[]> {
+  async getMessagesBetweenUsers(
+    user1Id: number,
+    user2Id: number
+  ): Promise<Message[]> {
     return Array.from(this.messages.values())
-      .filter(msg => 
-        (msg.senderId === user1Id && msg.receiverId === user2Id) ||
-        (msg.senderId === user2Id && msg.receiverId === user1Id)
+      .filter(
+        msg =>
+          (msg.senderId === user1Id && msg.receiverId === user2Id) ||
+          (msg.senderId === user2Id && msg.receiverId === user1Id)
       )
-      .sort((a, b) => (a.createdAt?.getTime() || 0) - (b.createdAt?.getTime() || 0));
+      .sort(
+        (a, b) => (a.createdAt?.getTime() || 0) - (b.createdAt?.getTime() || 0)
+      );
   }
 
-  async getConversations(userId: number): Promise<Array<{ user: User; lastMessage: Message; unreadCount: number }>> {
-    const userMessages = Array.from(this.messages.values()).filter(msg => 
-      msg.senderId === userId || msg.receiverId === userId
+  async getConversations(
+    userId: number
+  ): Promise<Array<{ user: User; lastMessage: Message; unreadCount: number }>> {
+    const userMessages = Array.from(this.messages.values()).filter(
+      msg => msg.senderId === userId || msg.receiverId === userId
     );
 
-    const conversationMap = new Map<number, { user: User; lastMessage: Message; unreadCount: number }>();
+    const conversationMap = new Map<
+      number,
+      { user: User; lastMessage: Message; unreadCount: number }
+    >();
 
     for (const message of userMessages) {
-      const otherUserId = message.senderId === userId ? message.receiverId : message.senderId;
+      const otherUserId =
+        message.senderId === userId ? message.receiverId : message.senderId;
       const otherUser = this.users.get(otherUserId);
-      
+
       if (!otherUser) continue;
 
       const existing = conversationMap.get(otherUserId);
       const isUnread = message.receiverId === userId && !message.isRead;
-      
-      if (!existing || (message.createdAt && existing.lastMessage.createdAt && message.createdAt > existing.lastMessage.createdAt)) {
+
+      if (
+        !existing ||
+        (message.createdAt &&
+          existing.lastMessage.createdAt &&
+          message.createdAt > existing.lastMessage.createdAt)
+      ) {
         conversationMap.set(otherUserId, {
           user: otherUser,
           lastMessage: message,
-          unreadCount: existing ? existing.unreadCount + (isUnread ? 1 : 0) : (isUnread ? 1 : 0)
+          unreadCount: existing
+            ? existing.unreadCount + (isUnread ? 1 : 0)
+            : isUnread
+              ? 1
+              : 0,
         });
       } else if (isUnread) {
         existing.unreadCount++;
       }
     }
 
-    return Array.from(conversationMap.values()).sort((a, b) => 
-      (b.lastMessage.createdAt?.getTime() || 0) - (a.lastMessage.createdAt?.getTime() || 0)
+    return Array.from(conversationMap.values()).sort(
+      (a, b) =>
+        (b.lastMessage.createdAt?.getTime() || 0) -
+        (a.lastMessage.createdAt?.getTime() || 0)
     );
   }
 
-  async markMessagesAsRead(senderId: number, receiverId: number): Promise<void> {
+  async markMessagesAsRead(
+    senderId: number,
+    receiverId: number
+  ): Promise<void> {
     Array.from(this.messages.values())
       .filter(msg => msg.senderId === senderId && msg.receiverId === receiverId)
       .forEach(msg => {

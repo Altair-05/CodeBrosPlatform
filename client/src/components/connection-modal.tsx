@@ -1,15 +1,15 @@
-import { useState } from "react";
-import { User } from "@shared/schema";
+import { useState } from 'react';
+import { User } from '@shared/schema';
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface ConnectionModalProps {
   isOpen: boolean;
@@ -26,19 +26,19 @@ export function ConnectionModal({
   onSendRequest,
   isLoading = false,
 }: ConnectionModalProps) {
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (targetUser) {
       onSendRequest(targetUser.id, message.trim() || undefined);
-      setMessage("");
+      setMessage('');
       onClose();
     }
   };
 
   const handleClose = () => {
-    setMessage("");
+    setMessage('');
     onClose();
   };
 
@@ -54,16 +54,22 @@ export function ConnectionModal({
         <div className="space-y-4">
           <div className="flex items-center space-x-4">
             <Avatar className="w-12 h-12">
-              <AvatarImage src={targetUser.profileImage} alt={`${targetUser.firstName} ${targetUser.lastName}`} />
+              <AvatarImage
+                src={targetUser.profileImage}
+                alt={`${targetUser.firstName} ${targetUser.lastName}`}
+              />
               <AvatarFallback>
-                {targetUser.firstName[0]}{targetUser.lastName[0]}
+                {targetUser.firstName[0]}
+                {targetUser.lastName[0]}
               </AvatarFallback>
             </Avatar>
             <div>
               <h4 className="font-medium text-gray-900 dark:text-white">
                 {targetUser.firstName} {targetUser.lastName}
               </h4>
-              <p className="text-sm text-gray-600 dark:text-gray-400">{targetUser.title}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                {targetUser.title}
+              </p>
             </div>
           </div>
 
@@ -74,7 +80,7 @@ export function ConnectionModal({
                 id="message"
                 placeholder={`Hi ${targetUser.firstName}, I'd love to connect and learn about your experience...`}
                 value={message}
-                onChange={(e) => setMessage(e.target.value)}
+                onChange={e => setMessage(e.target.value)}
                 rows={3}
                 className="mt-1"
               />
@@ -86,7 +92,7 @@ export function ConnectionModal({
                 disabled={isLoading}
                 className="flex-1 bg-brand-blue text-white hover:bg-brand-blue-dark"
               >
-                {isLoading ? "Sending..." : "Send Request"}
+                {isLoading ? 'Sending...' : 'Send Request'}
               </Button>
               <Button
                 type="button"

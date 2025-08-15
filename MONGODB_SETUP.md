@@ -16,6 +16,7 @@ This document describes the MongoDB database implementation for the CodeBrosPlat
 ## Database Schema
 
 ### Users Collection
+
 ```typescript
 {
   _id: ObjectId,
@@ -38,6 +39,7 @@ This document describes the MongoDB database implementation for the CodeBrosPlat
 ```
 
 ### Connections Collection
+
 ```typescript
 {
   _id: ObjectId,
@@ -51,6 +53,7 @@ This document describes the MongoDB database implementation for the CodeBrosPlat
 ```
 
 ### Messages Collection
+
 ```typescript
 {
   _id: ObjectId,
@@ -65,6 +68,7 @@ This document describes the MongoDB database implementation for the CodeBrosPlat
 ## Indexes
 
 ### Users Indexes
+
 - `username` (unique)
 - `email` (unique)
 - `experienceLevel`
@@ -73,11 +77,13 @@ This document describes the MongoDB database implementation for the CodeBrosPlat
 - `openToCollaborate`
 
 ### Connections Indexes
+
 - `requesterId, receiverId` (unique compound)
 - `receiverId, status`
 - `requesterId, status`
 
 ### Messages Indexes
+
 - `senderId, receiverId`
 - `receiverId, isRead`
 - `createdAt` (descending)
@@ -87,6 +93,7 @@ This document describes the MongoDB database implementation for the CodeBrosPlat
 ### 1. Install MongoDB
 
 #### Local Installation
+
 ```bash
 # Windows (using Chocolatey)
 choco install mongodb
@@ -100,11 +107,13 @@ sudo apt-get install mongodb
 ```
 
 #### MongoDB Atlas (Cloud)
+
 1. Create account at [MongoDB Atlas](https://www.mongodb.com/atlas)
 2. Create a new cluster
 3. Get your connection string
 
 ### 2. Install Dependencies
+
 ```bash
 npm install
 ```
@@ -125,6 +134,7 @@ PORT=5000
 ```
 
 For MongoDB Atlas:
+
 ```bash
 MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/codebros?retryWrites=true&w=majority
 MONGODB_DB_NAME=codebros
@@ -149,6 +159,7 @@ npm run dev
 All existing API endpoints remain the same, but now use MongoDB:
 
 ### Users
+
 - `GET /api/users` - Get all users
 - `GET /api/users/search` - Search users with filters
 - `GET /api/users/:id` - Get user by ID
@@ -157,6 +168,7 @@ All existing API endpoints remain the same, but now use MongoDB:
 - `POST /api/users/:id/online-status` - Update online status
 
 ### Connections
+
 - `GET /api/connections/user/:userId` - Get user connections
 - `GET /api/connections/pending/:userId` - Get pending requests
 - `GET /api/connections/accepted/:userId` - Get accepted connections
@@ -164,6 +176,7 @@ All existing API endpoints remain the same, but now use MongoDB:
 - `PATCH /api/connections/:id/status` - Update connection status
 
 ### Messages
+
 - `GET /api/messages/conversation/:user1Id/:user2Id` - Get messages between users
 - `GET /api/messages/conversations/:userId` - Get user conversations
 - `POST /api/messages` - Send message
@@ -172,6 +185,7 @@ All existing API endpoints remain the same, but now use MongoDB:
 ## Database Operations
 
 ### User Operations
+
 ```typescript
 // Get user by ID
 const user = await mongoStorage.getUser(userId);
@@ -187,6 +201,7 @@ const users = await mongoStorage.searchUsers(criteria);
 ```
 
 ### Connection Operations
+
 ```typescript
 // Create connection request
 const connection = await mongoStorage.createConnection(connectionData);
@@ -199,6 +214,7 @@ const updatedConnection = await mongoStorage.updateConnectionStatus(id, status);
 ```
 
 ### Message Operations
+
 ```typescript
 // Send message
 const message = await mongoStorage.createMessage(messageData);
@@ -213,16 +229,19 @@ const conversations = await mongoStorage.getConversations(userId);
 ## Performance Considerations
 
 ### Indexing Strategy
+
 - **Compound Indexes**: Used for connection queries to avoid multiple index lookups
 - **Text Search**: MongoDB text indexes for efficient user search
 - **Date Indexes**: Descending indexes on timestamps for chronological sorting
 
 ### Query Optimization
+
 - **Projection**: Only fetch required fields
 - **Aggregation**: Use MongoDB aggregation pipeline for complex queries
 - **Pagination**: Implement cursor-based pagination for large datasets
 
 ### Connection Pooling
+
 - **Default Settings**: MongoDB driver handles connection pooling automatically
 - **Max Pool Size**: Configurable via connection string parameters
 - **Connection Timeout**: Proper timeout handling for production environments
@@ -239,19 +258,23 @@ The migration from in-memory storage to MongoDB is seamless:
 ## Development Workflow
 
 ### Adding New Features
+
 1. Update schemas in `shared/mongo-schema.ts`
 2. Add methods to `server/db/mongo.ts`
 3. Update routes in `server/routes.ts`
 4. Update frontend types in `shared/types.ts`
 
 ### Database Migrations
+
 For schema changes:
+
 1. Update the schema definition
 2. Create a migration script
 3. Run the migration
 4. Update the seeder if needed
 
 ### Testing
+
 ```bash
 # Start MongoDB locally
 mongod
@@ -269,6 +292,7 @@ curl http://localhost:5000/api/users
 ## Production Deployment
 
 ### Environment Variables
+
 ```bash
 MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/codebros
 MONGODB_DB_NAME=codebros
@@ -277,6 +301,7 @@ PORT=5000
 ```
 
 ### Security Considerations
+
 - Use MongoDB Atlas for production
 - Enable authentication and authorization
 - Use connection string with username/password
@@ -284,6 +309,7 @@ PORT=5000
 - Set up proper network access rules
 
 ### Monitoring
+
 - MongoDB Atlas provides built-in monitoring
 - Set up alerts for connection issues
 - Monitor query performance
@@ -309,6 +335,7 @@ PORT=5000
    - Check MongoDB version compatibility
 
 ### Debug Commands
+
 ```bash
 # Check MongoDB status
 mongo --eval "db.serverStatus()"
@@ -336,4 +363,4 @@ When contributing to the MongoDB implementation:
 
 ## License
 
-This MongoDB implementation is part of the CodeBrosPlatform project and follows the same MIT license. 
+This MongoDB implementation is part of the CodeBrosPlatform project and follows the same MIT license.

@@ -1,15 +1,19 @@
-import { User } from "@shared/types";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Card, CardContent } from "@/components/ui/card";
-import { UserPlus, MessageCircle, Eye, Check } from "lucide-react";
-import { getExperienceLevelColor, getExperienceLevelLabel, getOnlineStatus } from "@/lib/utils";
+import { User } from '@shared/types';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Card, CardContent } from '@/components/ui/card';
+import { UserPlus, MessageCircle, Eye, Check } from 'lucide-react';
+import {
+  getExperienceLevelColor,
+  getExperienceLevelLabel,
+  getOnlineStatus,
+} from '@/lib/utils';
 
 interface DeveloperCardProps {
   user: User;
   currentUserId?: string;
-  connectionStatus?: "none" | "pending" | "connected";
+  connectionStatus?: 'none' | 'pending' | 'connected';
   onConnect?: (userId: string) => void;
   onMessage?: (userId: string) => void;
   onViewProfile?: (userId: string) => void;
@@ -18,17 +22,20 @@ interface DeveloperCardProps {
 export function DeveloperCard({
   user,
   currentUserId,
-  connectionStatus = "none",
+  connectionStatus = 'none',
   onConnect,
   onMessage,
   onViewProfile,
 }: DeveloperCardProps) {
-  const { color: statusColor, text: statusText } = getOnlineStatus(user.isOnline, user.lastSeen);
+  const { color: statusColor, text: statusText } = getOnlineStatus(
+    user.isOnline,
+    user.lastSeen
+  );
   const isOwnProfile = currentUserId === user._id;
 
   const handleConnect = () => {
     if (onConnect && !isOwnProfile) {
-      console.log("user   ", user)
+      console.log('user   ', user);
       onConnect(user._id);
     }
   };
@@ -59,7 +66,7 @@ export function DeveloperCard({
     }
 
     switch (connectionStatus) {
-      case "connected":
+      case 'connected':
         return (
           <Button
             onClick={handleMessage}
@@ -69,7 +76,7 @@ export function DeveloperCard({
             Message
           </Button>
         );
-      case "pending":
+      case 'pending':
         return (
           <Button
             disabled
@@ -98,19 +105,29 @@ export function DeveloperCard({
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center space-x-4">
             <Avatar className="w-16 h-16">
-              <AvatarImage src={user.profileImage} alt={`${user.firstName} ${user.lastName}`} />
+              <AvatarImage
+                src={user.profileImage}
+                alt={`${user.firstName} ${user.lastName}`}
+              />
               <AvatarFallback className="text-lg">
-                {user.firstName[0]}{user.lastName[0]}
+                {user.firstName[0]}
+                {user.lastName[0]}
               </AvatarFallback>
             </Avatar>
             <div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                 {user.firstName} {user.lastName}
               </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">{user.title}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                {user.title}
+              </p>
               <div className="flex items-center mt-1">
-                <div className={`w-2 h-2 ${statusColor} rounded-full mr-2`}></div>
-                <span className="text-xs text-gray-500 dark:text-gray-400">{statusText}</span>
+                <div
+                  className={`w-2 h-2 ${statusColor} rounded-full mr-2`}
+                ></div>
+                <span className="text-xs text-gray-500 dark:text-gray-400">
+                  {statusText}
+                </span>
               </div>
             </div>
           </div>
@@ -127,11 +144,7 @@ export function DeveloperCard({
 
         <div className="flex flex-wrap gap-2 mb-4">
           {user.skills.slice(0, 4).map((skill, index) => (
-            <Badge
-              key={index}
-              variant="secondary"
-              className="text-xs"
-            >
+            <Badge key={index} variant="secondary" className="text-xs">
               {skill}
             </Badge>
           ))}

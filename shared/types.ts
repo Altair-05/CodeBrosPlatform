@@ -8,7 +8,7 @@ export interface User {
   lastName: string;
   title: string;
   bio?: string;
-  experienceLevel: "beginner" | "intermediate" | "professional";
+  experienceLevel: 'beginner' | 'intermediate' | 'professional';
   skills: string[];
   profileImage?: string;
   isOnline: boolean;
@@ -22,7 +22,7 @@ export interface Connection {
   _id: string;
   requesterId: string;
   receiverId: string;
-  status: "pending" | "accepted" | "declined";
+  status: 'pending' | 'accepted' | 'declined';
   message?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -52,7 +52,7 @@ export interface InsertUser {
   lastName: string;
   title: string;
   bio?: string;
-  experienceLevel: "beginner" | "intermediate" | "professional";
+  experienceLevel: 'beginner' | 'intermediate' | 'professional';
   skills?: string[];
   profileImage?: string;
   openToCollaborate?: boolean;
@@ -61,7 +61,7 @@ export interface InsertUser {
 export interface InsertConnection {
   requesterId: string;
   receiverId: string;
-  status: "pending" | "accepted" | "declined";
+  status: 'pending' | 'accepted' | 'declined';
   message?: string;
 }
 
@@ -79,7 +79,7 @@ export interface UpdateUser {
   lastName?: string;
   title?: string;
   bio?: string;
-  experienceLevel?: "beginner" | "intermediate" | "professional";
+  experienceLevel?: 'beginner' | 'intermediate' | 'professional';
   skills?: string[];
   profileImage?: string;
   openToCollaborate?: boolean;
@@ -91,4 +91,4 @@ export interface SearchUsers {
   skills?: string[];
   openToCollaborate?: boolean;
   isOnline?: boolean;
-} 
+}

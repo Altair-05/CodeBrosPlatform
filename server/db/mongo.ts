@@ -1,15 +1,15 @@
-import { MongoClient, Db, Collection, ObjectId } from "mongodb";
-import { 
-  User, 
-  Connection, 
-  Message, 
-  InsertUser, 
-  InsertConnection, 
+import { MongoClient, Db, Collection, ObjectId } from 'mongodb';
+import {
+  User,
+  Connection,
+  Message,
+  InsertUser,
+  InsertConnection,
   InsertMessage,
   UpdateUser,
   SearchUsers,
-  COLLECTIONS
-} from "@shared/mongo-schema";
+  COLLECTIONS,
+} from '@shared/mongo-schema';
 
 export class MongoStorage {
   private client: MongoClient;
@@ -19,9 +19,11 @@ export class MongoStorage {
   private messages: Collection<Message>;
 
   constructor() {
-    const mongoUri = process.env.MONGODB_URI || "mongodb+srv://ghostcoder420:I0ChBo6m9HVl5nIB@codebros.bzpqzuc.mongodb.net/?retryWrites=true&w=majority&appName=codebros";
-    const dbName = process.env.MONGODB_DB_NAME || "codebros";
-    
+    const mongoUri =
+      process.env.MONGODB_URI ||
+      'mongodb+srv://ghostcoder420:I0ChBo6m9HVl5nIB@codebros.bzpqzuc.mongodb.net/?retryWrites=true&w=majority&appName=codebros';
+    const dbName = process.env.MONGODB_DB_NAME || 'codebros';
+
     this.client = new MongoClient(mongoUri);
     this.db = this.client.db(dbName);
     this.users = this.db.collection<User>(COLLECTIONS.USERS);
@@ -32,12 +34,12 @@ export class MongoStorage {
   async connect(): Promise<void> {
     try {
       await this.client.connect();
-      console.log("Connected to MongoDB");
-      
+      console.log('Connected to MongoDB');
+
       // Create indexes for better performance
       await this.createIndexes();
     } catch (error) {
-      console.error("Failed to connect to MongoDB:", error);
+      console.error('Failed to connect to MongoDB:', error);
       throw error;
     }
   }
@@ -56,7 +58,10 @@ export class MongoStorage {
     await this.users.createIndex({ openToCollaborate: 1 });
 
     // Connections indexes
-    await this.connections.createIndex({ requesterId: 1, receiverId: 1 }, { unique: true });
+    await this.connections.createIndex(
+      { requesterId: 1, receiverId: 1 },
+      { unique: true }
+    );
     await this.connections.createIndex({ receiverId: 1, status: 1 });
     await this.connections.createIndex({ requesterId: 1, status: 1 });
 
@@ -72,7 +77,7 @@ export class MongoStorage {
       const objectId = new ObjectId(id);
       return await this.users.findOne({ _id: objectId });
     } catch (error) {
-      console.error("Error getting user:", error);
+      console.error('Error getting user:', error);
       return undefined;
     }
   }
@@ -114,7 +119,7 @@ export class MongoStorage {
 
       return result || undefined;
     } catch (error) {
-      console.error("Error updating user:", error);
+      console.error('Error updating user:', error);
       return undefined;
     }
   }
@@ -161,33 +166,36 @@ export class MongoStorage {
       const objectId = new ObjectId(id);
       await this.users.updateOne(
         { _id: objectId },
-        { 
-          $set: { 
-            isOnline, 
+        {
+          $set: {
+            isOnline,
             lastSeen: new Date(),
-            updatedAt: new Date()
-          } 
+            updatedAt: new Date(),
+          },
         }
       );
     } catch (error) {
-      console.error("Error setting user online status:", error);
+      console.error('Error setting user online status:', error);
     }
   }
 
   // Connection operations
-  async getConnection(requesterId: string, receiverId: string): Promise<Connection | undefined> {
+  async getConnection(
+    requesterId: string,
+    receiverId: string
+  ): Promise<Connection | undefined> {
     try {
       const requesterObjectId = new ObjectId(requesterId);
       const receiverObjectId = new ObjectId(receiverId);
-      
+
       return await this.connections.findOne({
         $or: [
           { requesterId: requesterObjectId, receiverId: receiverObjectId },
-          { requesterId: receiverObjectId, receiverId: requesterObjectId }
-        ]
+          { requesterId: receiverObjectId, receiverId: requesterObjectId },
+        ],
       });
     } catch (error) {
-      console.error("Error getting connection:", error);
+      console.error('Error getting connection:', error);
       return undefined;
     }
   }
@@ -195,14 +203,13 @@ export class MongoStorage {
   async getConnectionsByUserId(userId: string): Promise<Connection[]> {
     try {
       const userObjectId = new ObjectId(userId);
-      return await this.connections.find({
-        $or: [
-          { requesterId: userObjectId },
-          { receiverId: userObjectId }
-        ]
-      }).toArray();
+      return await this.connections
+        .find({
+          $or: [{ requesterId: userObjectId }, { receiverId: userObjectId }],
+        })
+        .toArray();
     } catch (error) {
-      console.error("Error getting connections by user ID:", error);
+      console.error('Error getting connections by user ID:', error);
       return [];
     }
   }
@@ -210,17 +217,21 @@ export class MongoStorage {
   async getPendingConnectionRequests(userId: string): Promise<Connection[]> {
     try {
       const userObjectId = new ObjectId(userId);
-      return await this.connections.find({
-        receiverId: userObjectId,
-        status: "pending"
-      }).toArray();
+      return await this.connections
+        .find({
+          receiverId: userObjectId,
+          status: 'pending',
+        })
+        .toArray();
     } catch (error) {
-      console.error("Error getting pending connection requests:", error);
+      console.error('Error getting pending connection requests:', error);
       return [];
     }
   }
 
-  async createConnection(connectionData: InsertConnection): Promise<Connection> {
+  async createConnection(
+    connectionData: InsertConnection
+  ): Promise<Connection> {
     const connection: Omit<Connection, '_id'> = {
       ...connectionData,
       createdAt: new Date(),
@@ -231,23 +242,26 @@ export class MongoStorage {
     return { ...connection, _id: result.insertedId };
   }
 
-  async updateConnectionStatus(id: string, status: string): Promise<Connection | undefined> {
+  async updateConnectionStatus(
+    id: string,
+    status: string
+  ): Promise<Connection | undefined> {
     try {
       const objectId = new ObjectId(id);
       const result = await this.connections.findOneAndUpdate(
         { _id: objectId },
-        { 
-          $set: { 
-            status, 
-            updatedAt: new Date() 
-          } 
+        {
+          $set: {
+            status,
+            updatedAt: new Date(),
+          },
         },
         { returnDocument: 'after' }
       );
 
       return result || undefined;
     } catch (error) {
-      console.error("Error updating connection status:", error);
+      console.error('Error updating connection status:', error);
       return undefined;
     }
   }
@@ -255,23 +269,26 @@ export class MongoStorage {
   async getAcceptedConnections(userId: string): Promise<User[]> {
     try {
       const userObjectId = new ObjectId(userId);
-      const acceptedConnections = await this.connections.find({
-        $or: [
-          { requesterId: userObjectId },
-          { receiverId: userObjectId }
-        ],
-        status: "accepted"
-      }).toArray();
+      const acceptedConnections = await this.connections
+        .find({
+          $or: [{ requesterId: userObjectId }, { receiverId: userObjectId }],
+          status: 'accepted',
+        })
+        .toArray();
 
-      const connectedUserIds = acceptedConnections.map(conn => 
-        conn.requesterId.equals(userObjectId) ? conn.receiverId : conn.requesterId
+      const connectedUserIds = acceptedConnections.map(conn =>
+        conn.requesterId.equals(userObjectId)
+          ? conn.receiverId
+          : conn.requesterId
       );
 
-      return await this.users.find({
-        _id: { $in: connectedUserIds }
-      }).toArray();
+      return await this.users
+        .find({
+          _id: { $in: connectedUserIds },
+        })
+        .toArray();
     } catch (error) {
-      console.error("Error getting accepted connections:", error);
+      console.error('Error getting accepted connections:', error);
       return [];
     }
   }
@@ -288,55 +305,68 @@ export class MongoStorage {
     return { ...message, _id: result.insertedId };
   }
 
-  async getMessagesBetweenUsers(user1Id: string, user2Id: string): Promise<Message[]> {
+  async getMessagesBetweenUsers(
+    user1Id: string,
+    user2Id: string
+  ): Promise<Message[]> {
     try {
       const user1ObjectId = new ObjectId(user1Id);
       const user2ObjectId = new ObjectId(user2Id);
-      
-      return await this.messages.find({
-        $or: [
-          { senderId: user1ObjectId, receiverId: user2ObjectId },
-          { senderId: user2ObjectId, receiverId: user1ObjectId }
-        ]
-      }).sort({ createdAt: 1 }).toArray();
+
+      return await this.messages
+        .find({
+          $or: [
+            { senderId: user1ObjectId, receiverId: user2ObjectId },
+            { senderId: user2ObjectId, receiverId: user1ObjectId },
+          ],
+        })
+        .sort({ createdAt: 1 })
+        .toArray();
     } catch (error) {
-      console.error("Error getting messages between users:", error);
+      console.error('Error getting messages between users:', error);
       return [];
     }
   }
 
-  async getConversations(userId: string): Promise<Array<{ user: User; lastMessage: Message; unreadCount: number }>> {
+  async getConversations(
+    userId: string
+  ): Promise<Array<{ user: User; lastMessage: Message; unreadCount: number }>> {
     try {
-
       const userObjectId = new ObjectId(userId);
-      
-      const userMessages = await this.messages.find({
-        $or: [
-          { senderId: userObjectId },
-          { receiverId: userObjectId }
-        ]
-      }).sort({ createdAt: -1 }).toArray();
-      const conversationMap = new Map<string, {
-        user: User;
-        lastMessage: Message;
-        unreadCount: number;
-      }>();
+
+      const userMessages = await this.messages
+        .find({
+          $or: [{ senderId: userObjectId }, { receiverId: userObjectId }],
+        })
+        .sort({ createdAt: -1 })
+        .toArray();
+      const conversationMap = new Map<
+        string,
+        {
+          user: User;
+          lastMessage: Message;
+          unreadCount: number;
+        }
+      >();
 
       for (const message of userMessages) {
-        const otherUserId = message.senderId.equals(userObjectId) 
-          ? message.receiverId.toString() 
+        const otherUserId = message.senderId.equals(userObjectId)
+          ? message.receiverId.toString()
           : message.senderId.toString();
 
         if (!conversationMap.has(otherUserId)) {
-          const otherUser = await this.users.findOne({ 
-            _id: new ObjectId(otherUserId) 
+          const otherUser = await this.users.findOne({
+            _id: new ObjectId(otherUserId),
           });
-          
+
           if (otherUser) {
             conversationMap.set(otherUserId, {
               user: otherUser,
               lastMessage: message,
-              unreadCount: message.receiverId.equals(userObjectId) && !message.isRead ? 1 : 0
+              unreadCount:
+                message.receiverId.equals(userObjectId) && !message.isRead
+                  ? 1
+                  : 0,
             });
           }
         } else {
@@ -349,82 +379,89 @@ export class MongoStorage {
           }
         }
       }
-      return Array.from(conversationMap.values()).sort((a, b) => 
-        b.lastMessage.createdAt.getTime() - a.lastMessage.createdAt.getTime()
+      return Array.from(conversationMap.values()).sort(
+        (a, b) =>
+          b.lastMessage.createdAt.getTime() - a.lastMessage.createdAt.getTime()
       );
     } catch (error) {
-      console.error("Error getting conversations:", error);
+      console.error('Error getting conversations:', error);
       return [];
     }
   }
 
-  async markMessagesAsRead(senderId: string, receiverId: string): Promise<void> {
+  async markMessagesAsRead(
+    senderId: string,
+    receiverId: string
+  ): Promise<void> {
     try {
       const senderObjectId = new ObjectId(senderId);
       const receiverObjectId = new ObjectId(receiverId);
-      
+
       await this.messages.updateMany(
-        { 
+        {
           receiverId: receiverObjectId,
-          isRead: false 
+          isRead: false,
         },
         { $set: { isRead: true } }
       );
     } catch (error) {
-      console.error("Error marking messages as read:", error);
+      console.error('Error marking messages as read:', error);
     }
   }
   //this is for getting unread messages
-  async getLastUnreadMessagesGroupedBySender(userId: string): Promise<
-      Array<{ user: User; lastUnreadMessage: Message; unreadCount: number }>
-    > {
-      try {
-        const userObjectId = new ObjectId(userId);
+  async getLastUnreadMessagesGroupedBySender(
+    userId: string
+  ): Promise<
+    Array<{ user: User; lastUnreadMessage: Message; unreadCount: number }>
+  > {
+    try {
+      const userObjectId = new ObjectId(userId);
 
-
-        const unreadMessages = await this.messages.find({
+      const unreadMessages = await this.messages
+        .find({
           receiverId: userObjectId,
-          isRead: false
-        }).sort({ createdAt: -1 }).toArray();
+          isRead: false,
+        })
+        .sort({ createdAt: -1 })
+        .toArray();
 
-        const senderMap = new Map<string, {
+      const senderMap = new Map<
+        string,
+        {
           user: User;
           lastUnreadMessage: Message;
           unreadCount: number;
-        }>();
-
-        for (const message of unreadMessages) {
-          const senderId = message.senderId.toString();
-
-          if (!senderMap.has(senderId)) {
-            const senderUser = await this.users.findOne({ _id: new ObjectId(senderId) });
-
-            if (senderUser) {
-              senderMap.set(senderId, {
-                user: senderUser,
-                lastUnreadMessage: message, 
-                unreadCount: 1
-              });
-            }
-          } else {
-            const existing = senderMap.get(senderId)!;
-            existing.unreadCount++; 
-          }
         }
+      >();
 
-        return Array.from(senderMap.values());
+      for (const message of unreadMessages) {
+        const senderId = message.senderId.toString();
 
-      } catch (error) {
-        console.error("Error getting last unread messages:", error);
-        return [];
+        if (!senderMap.has(senderId)) {
+          const senderUser = await this.users.findOne({
+            _id: new ObjectId(senderId),
+          });
+
+          if (senderUser) {
+            senderMap.set(senderId, {
+              user: senderUser,
+              lastUnreadMessage: message,
+              unreadCount: 1,
+            });
+          }
+        } else {
+          const existing = senderMap.get(senderId)!;
+          existing.unreadCount++;
+        }
       }
-    }
 
+      return Array.from(senderMap.values());
+    } catch (error) {
+      console.error('Error getting last unread messages:', error);
+      return [];
+    }
+  }
 }
 
-
-
-
-
 // Export singleton instance
-export const mongoStorage = new MongoStorage(); 
+export const mongoStorage = new MongoStorage();

@@ -1,10 +1,10 @@
-import React, { useRef, useEffect, useState } from "react";
-import axios from "axios";
-import { Button } from "@/components/ui/button";
-import { MessageCircle } from "lucide-react";
-import { User } from "@shared/types"; // Make sure `User` type has at least `id`
-import { useAuth } from "@/contexts/auth-context";
-import { useToast } from "@/hooks/use-toast";
+import React, { useRef, useEffect, useState } from 'react';
+import axios from 'axios';
+import { Button } from '@/components/ui/button';
+import { MessageCircle } from 'lucide-react';
+import { User } from '@shared/types'; // Make sure `User` type has at least `id`
+import { useAuth } from '@/contexts/auth-context';
+import { useToast } from '@/hooks/use-toast';
 
 type MessageCardProps = {
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
@@ -17,7 +17,7 @@ export default function MCard({
   receiver,
   isOpen,
 }: MessageCardProps) {
-  const [message, setMessage] = useState<string>("");
+  const [message, setMessage] = useState<string>('');
   const popupRef = useRef<HTMLDivElement | null>(null);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -33,45 +33,45 @@ export default function MCard({
     };
 
     if (isOpen) {
-      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener('mousedown', handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isOpen, setIsOpen]);
 
   const handleSend = async () => {
     if (!user || !user._id) {
       toast({
-        title: "Login required",
-        description: "You need to log in before sending a message.",
-        variant: "destructive",
+        title: 'Login required',
+        description: 'You need to log in before sending a message.',
+        variant: 'destructive',
       });
       return;
     }
 
     try {
-      await axios.post("/api/messages", {
+      await axios.post('/api/messages', {
         senderId: user._id,
         receiverId: receiver._id,
         content: message,
       });
 
       toast({
-        title: "Message Sent",
-        description: "Your message was successfully sent.",
+        title: 'Message Sent',
+        description: 'Your message was successfully sent.',
       });
 
       setIsOpen(false);
-      setMessage("");
+      setMessage('');
     } catch (err) {
       toast({
-        title: "Error",
-        description: "Failed to send message. Please try again.",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to send message. Please try again.',
+        variant: 'destructive',
       });
-      console.error("Failed to send message:", err);
+      console.error('Failed to send message:', err);
     }
   };
 
@@ -97,7 +97,7 @@ export default function MCard({
             <textarea
               className="w-full border border-white rounded-md p-2 mb-4 h-24 text-black"
               value={message}
-              onChange={(e) => setMessage(e.target.value)}
+              onChange={e => setMessage(e.target.value)}
               placeholder="Type your message..."
             />
             <div className="flex justify-end gap-2">

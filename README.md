@@ -1,4 +1,5 @@
 # 🚀 CodeBrosPlatform
+
 https://codebros-platform.onrender.com/
 
 A modern **LinkedIn-style networking platform for developers**, built with **React**, **TypeScript**, and **Express.js**.
@@ -8,16 +9,16 @@ A modern **LinkedIn-style networking platform for developers**, built with **Rea
 
 ## 📚 Table of Contents
 
-* [📖 About](#-about)
-* [✨ Features](#-features)
-* [🗂 Project Structure](#-project-structure)
-* [⚙️ Prerequisites](#️-prerequisites)
-* [🚀 Installation & Setup](#-installation--setup)
-* [🛠 Usage](#-usage)
-* [📜 Available Scripts](#-available-scripts)
-* [🤝 Contributing](#-contributing)
-* [❓ FAQ](#-faq)
-* [📄 License](#-license)
+- [📖 About](#-about)
+- [✨ Features](#-features)
+- [🗂 Project Structure](#-project-structure)
+- [⚙️ Prerequisites](#️-prerequisites)
+- [🚀 Installation & Setup](#-installation--setup)
+- [🛠 Usage](#-usage)
+- [📜 Available Scripts](#-available-scripts)
+- [🤝 Contributing](#-contributing)
+- [❓ FAQ](#-faq)
+- [📄 License](#-license)
 
 ---
 
@@ -72,8 +73,8 @@ CodeBrosPlatform/
 
 Before getting started, make sure you have the following installed:
 
-* [Node.js](https://nodejs.org/) (v18 or higher)
-* [Git](https://git-scm.com/)
+- [Node.js](https://nodejs.org/) (v18 or higher)
+- [Git](https://git-scm.com/)
 
 ---
 
@@ -94,13 +95,13 @@ npm install
 
 3. **Start the Development Server**
 
-* **Windows (Recommended)**
+- **Windows (Recommended)**
 
   ```bash
   dev.bat
   ```
 
-* **Cross-platform Manual Start**
+- **Cross-platform Manual Start**
 
   ```bash
   set NODE_ENV=development && tsx server/index.ts
@@ -114,12 +115,12 @@ npm install
 
 ## 🛠 Usage
 
-* 🧑 Create or log in as a developer
-* 📝 Set up your profile with skills, bio, and experience
-* 🔍 Discover and connect with fellow developers
-* 📩 Send and manage connection requests
-* 🌗 Toggle between dark/light themes
-* 💬 Start networking and collaborating!
+- 🧑 Create or log in as a developer
+- 📝 Set up your profile with skills, bio, and experience
+- 🔍 Discover and connect with fellow developers
+- 📩 Send and manage connection requests
+- 🌗 Toggle between dark/light themes
+- 💬 Start networking and collaborating!
 
 ---
 
@@ -146,11 +147,13 @@ We welcome all kinds of contributions — bug reports, feature requests, documen
    ```bash
    git checkout -b feature/my-awesome-feature
    ```
+
 3. 💾 Make your changes and commit:
 
    ```bash
    git commit -m "Add my awesome feature"
    ```
+
 4. 🚀 Push to your fork and create a PR
 
 Check out the [CONTRIBUTION.md](CONTRIBUTION.md) for full guidelines.
