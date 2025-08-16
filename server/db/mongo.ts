@@ -31,6 +31,10 @@ export class MongoStorage {
     this.messages = this.db.collection<Message>(COLLECTIONS.MESSAGES);
   }
 
+  getDb(): Db {
+    return this.db;
+  }
+
   async connect(): Promise<void> {
     try {
       await this.client.connect();
@@ -75,7 +79,8 @@ export class MongoStorage {
   async getUser(id: string): Promise<User | undefined> {
     try {
       const objectId = new ObjectId(id);
-      return await this.users.findOne({ _id: objectId });
+      const result = await this.users.findOne({ _id: objectId });
+      return result ?? undefined;
     } catch (error) {
       console.error('Error getting user:', error);
       return undefined;
@@ -83,11 +88,13 @@ export class MongoStorage {
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return await this.users.findOne({ username });
+    const result = await this.users.findOne({ username });
+    return result ?? undefined;
   }
 
   async getUserByEmail(email: string): Promise<User | undefined> {
-    return await this.users.findOne({ email });
+    const result = await this.users.findOne({ email });
+    return result ?? undefined;
   }
 
   async createUser(userData: InsertUser): Promise<User> {
@@ -188,12 +195,13 @@ export class MongoStorage {
       const requesterObjectId = new ObjectId(requesterId);
       const receiverObjectId = new ObjectId(receiverId);
 
-      return await this.connections.findOne({
+      const result = await this.connections.findOne({
         $or: [
           { requesterId: requesterObjectId, receiverId: receiverObjectId },
           { requesterId: receiverObjectId, receiverId: requesterObjectId },
         ],
       });
+      return result ?? undefined;
     } catch (error) {
       console.error('Error getting connection:', error);
       return undefined;
@@ -244,7 +252,7 @@ export class MongoStorage {
 
   async updateConnectionStatus(
     id: string,
-    status: string
+    status: 'pending' | 'accepted' | 'declined'
   ): Promise<Connection | undefined> {
     try {
       const objectId = new ObjectId(id);
@@ -252,14 +260,14 @@ export class MongoStorage {
         { _id: objectId },
         {
           $set: {
-            status,
+            status: status,
             updatedAt: new Date(),
           },
         },
         { returnDocument: 'after' }
       );
 
-      return result || undefined;
+      return result ?? undefined;
     } catch (error) {
       console.error('Error updating connection status:', error);
       return undefined;
@@ -371,18 +379,34 @@ export class MongoStorage {
           }
         } else {
           const existing = conversationMap.get(otherUserId)!;
-          if (message.createdAt > existing.lastMessage.createdAt) {
-            existing.lastMessage = message;
+          // createdAt is a Date in our schema, but ensure it's a Date object
+          if (
+            (existing.lastMessage.createdAt as any) instanceof Date &&
+            (message.createdAt as any) instanceof Date
+          ) {
+            if (
+              (message.createdAt as Date).getTime() >
+              (existing.lastMessage.createdAt as Date).getTime()
+            ) {
+              existing.lastMessage = message;
+            }
           }
           if (message.receiverId.equals(userObjectId) && !message.isRead) {
             existing.unreadCount++;
           }
         }
       }
-      return Array.from(conversationMap.values()).sort(
-        (a, b) =>
-          b.lastMessage.createdAt.getTime() - a.lastMessage.createdAt.getTime()
-      );
+      return Array.from(conversationMap.values()).sort((a, b) => {
+        const aTime =
+          (a.lastMessage.createdAt as any) instanceof Date
+            ? (a.lastMessage.createdAt as Date).getTime()
+            : new Date(a.lastMessage.createdAt as any).getTime();
+        const bTime =
+          (b.lastMessage.createdAt as any) instanceof Date
+            ? (b.lastMessage.createdAt as Date).getTime()
+            : new Date(b.lastMessage.createdAt as any).getTime();
+        return bTime - aTime;
+      });
     } catch (error) {
       console.error('Error getting conversations:', error);
       return [];

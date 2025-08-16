@@ -11,7 +11,7 @@ import {
   searchUsersSchema,
 } from '@shared/mongo-schema';
 import { z } from 'zod';
-import { ObjectId } from 'mongodb'; // ADDED: Import ObjectId for database queries
+// NOTE: ObjectId imported once above
 
 const loginSchema = z.object({
   email: z.string().email(),

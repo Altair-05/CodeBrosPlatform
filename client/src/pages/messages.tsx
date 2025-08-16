@@ -42,6 +42,12 @@ export default function Messages() {
     queryKey: [
       `/api/messages/conversation/${currentUserId}/${selectedConversation?._id}`,
     ],
+    queryFn: async () => {
+      const res = await axios.get(
+        `/api/messages/conversation/${currentUserId}/${selectedConversation?._id}`
+      );
+      return res.data;
+    },
     enabled: !!selectedConversation,
   });
 
@@ -51,7 +57,7 @@ export default function Messages() {
       receiverId,
       content,
     }: {
-      receiverId: number;
+      receiverId: string;
       content: string;
     }) => {
       const response = await apiRequest('POST', '/api/messages', {
@@ -131,7 +137,7 @@ export default function Messages() {
                 ) : (
                   <div className="space-y-1">
                     {filteredConversations.map((conversation, index) => (
-                      <div key={conversation.user.id}>
+                      <div key={conversation.user._id}>
                         <div
                           className={`p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ${
                             selectedConversation?._id === conversation.user._id
@@ -244,7 +250,7 @@ export default function Messages() {
                       <div className="space-y-4">
                         {messages.map(message => (
                           <div
-                            key={message.id}
+                            key={message._id}
                             className={`flex ${
                               message.senderId === currentUserId
                                 ? 'justify-end'

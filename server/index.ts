@@ -83,7 +83,9 @@ app.use((req, res, next) => {
       process.exit(0);
     });
   } catch (error) {
-    log('Failed to start server:', error);
+    log(
+      `Failed to start server: ${error instanceof Error ? error.message : String(error)}`
+    );
     process.exit(1);
   }
 })();
