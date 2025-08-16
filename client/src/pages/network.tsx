@@ -87,8 +87,8 @@ export default function Network() {
       receiverId,
       message,
     }: {
-      requesterId: number;
-      receiverId: number;
+      requesterId: string;
+      receiverId: string;
       message?: string;
     }) => {
       const response = await apiRequest('POST', '/api/connections', {
@@ -150,7 +150,11 @@ export default function Network() {
   };
 
   const handleSendRequest = (userId: string, message?: string) => {
-    sendConnectionMutation.mutate({ receiverId: userId, message });
+    sendConnectionMutation.mutate({
+      requesterId: user?._id ?? '',
+      receiverId: userId,
+      message,
+    });
   };
 
   // FIX: Added handler to navigate to the user's profile page.
