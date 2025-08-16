@@ -1,40 +1,88 @@
-import { useState } from "react";
-import { useLocation } from "wouter";
-import { useMutation } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { X, Plus } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { useState } from 'react';
+import { useLocation } from 'wouter';
+import { useMutation } from '@tanstack/react-query';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
+import { X, Plus } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 const SKILLS_OPTIONS = [
-  "JavaScript", "TypeScript", "React", "Vue", "Angular", "Node.js", "Python", "Java", "C#", "C++",
-  "Go", "Rust", "PHP", "Ruby", "Django", "Flask", "Express", "Spring Boot", "ASP.NET", "Laravel",
-  "MongoDB", "PostgreSQL", "MySQL", "Redis", "AWS", "Azure", "GCP", "Docker", "Kubernetes", "Git",
-  "CI/CD", "DevOps", "Machine Learning", "AI", "Data Science", "Mobile Development", "Flutter", "React Native",
-  "UI/UX", "Figma", "Adobe XD", "HTML/CSS", "Sass", "Tailwind CSS", "Bootstrap", "GraphQL", "REST API"
+  'JavaScript',
+  'TypeScript',
+  'React',
+  'Vue',
+  'Angular',
+  'Node.js',
+  'Python',
+  'Java',
+  'C#',
+  'C++',
+  'Go',
+  'Rust',
+  'PHP',
+  'Ruby',
+  'Django',
+  'Flask',
+  'Express',
+  'Spring Boot',
+  'ASP.NET',
+  'Laravel',
+  'MongoDB',
+  'PostgreSQL',
+  'MySQL',
+  'Redis',
+  'AWS',
+  'Azure',
+  'GCP',
+  'Docker',
+  'Kubernetes',
+  'Git',
+  'CI/CD',
+  'DevOps',
+  'Machine Learning',
+  'AI',
+  'Data Science',
+  'Mobile Development',
+  'Flutter',
+  'React Native',
+  'UI/UX',
+  'Figma',
+  'Adobe XD',
+  'HTML/CSS',
+  'Sass',
+  'Tailwind CSS',
+  'Bootstrap',
+  'GraphQL',
+  'REST API',
 ];
 
 export default function Register() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   const [formData, setFormData] = useState({
-    username: "",
-    email: "",
-    password: "",
-    firstName: "",
-    lastName: "",
-    title: "",
-    bio: "",
-    experienceLevel: "beginner" as "beginner" | "intermediate" | "professional",
+    username: '',
+    email: '',
+    password: '',
+    firstName: '',
+    lastName: '',
+    title: '',
+    bio: '',
+    experienceLevel: 'beginner' as 'beginner' | 'intermediate' | 'professional',
     skills: [] as string[],
     openToCollaborate: true,
   });
-  const [newSkill, setNewSkill] = useState("");
+  const [newSkill, setNewSkill] = useState('');
 
   const registerMutation = useMutation({
     mutationFn: async (userData: any) => {
@@ -45,26 +93,27 @@ export default function Register() {
         },
         body: JSON.stringify(userData),
       });
-      
+
       if (!response.ok) {
         const error = await response.json();
         throw new Error(error.message || 'Registration failed');
       }
-      
+
       return response.json();
     },
     onSuccess: () => {
       toast({
-        title: "Success!",
-        description: "Your account has been created successfully!",
+        title: 'Success!',
+        description: 'Your account has been created successfully!',
       });
       setLocation('/');
     },
     onError: (error: any) => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to create account. Please try again.",
-        variant: "destructive",
+        title: 'Error',
+        description:
+          error.message || 'Failed to create account. Please try again.',
+        variant: 'destructive',
       });
     },
   });
@@ -80,13 +129,19 @@ export default function Register() {
 
   const addSkill = () => {
     if (newSkill.trim() && !formData.skills.includes(newSkill.trim())) {
-      setFormData(prev => ({ ...prev, skills: [...prev.skills, newSkill.trim()] }));
-      setNewSkill("");
+      setFormData(prev => ({
+        ...prev,
+        skills: [...prev.skills, newSkill.trim()],
+      }));
+      setNewSkill('');
     }
   };
 
   const removeSkill = (skillToRemove: string) => {
-    setFormData(prev => ({ ...prev, skills: prev.skills.filter(skill => skill !== skillToRemove) }));
+    setFormData(prev => ({
+      ...prev,
+      skills: prev.skills.filter(skill => skill !== skillToRemove),
+    }));
   };
 
   return (
@@ -94,9 +149,12 @@ export default function Register() {
       <div className="max-w-2xl mx-auto px-4">
         <Card>
           <CardHeader>
-            <CardTitle className="text-2xl text-center">Join CodeBros</CardTitle>
+            <CardTitle className="text-2xl text-center">
+              Join CodeBros
+            </CardTitle>
             <p className="text-center text-gray-600 dark:text-gray-400">
-              Create your developer profile and start connecting with other developers
+              Create your developer profile and start connecting with other
+              developers
             </p>
           </CardHeader>
           <CardContent>
@@ -108,7 +166,9 @@ export default function Register() {
                   <Input
                     id="firstName"
                     value={formData.firstName}
-                    onChange={(e) => handleInputChange("firstName", e.target.value)}
+                    onChange={e =>
+                      handleInputChange('firstName', e.target.value)
+                    }
                     required
                   />
                 </div>
@@ -117,7 +177,9 @@ export default function Register() {
                   <Input
                     id="lastName"
                     value={formData.lastName}
-                    onChange={(e) => handleInputChange("lastName", e.target.value)}
+                    onChange={e =>
+                      handleInputChange('lastName', e.target.value)
+                    }
                     required
                   />
                 </div>
@@ -129,7 +191,9 @@ export default function Register() {
                   <Input
                     id="username"
                     value={formData.username}
-                    onChange={(e) => handleInputChange("username", e.target.value)}
+                    onChange={e =>
+                      handleInputChange('username', e.target.value)
+                    }
                     required
                   />
                 </div>
@@ -139,7 +203,7 @@ export default function Register() {
                     id="email"
                     type="email"
                     value={formData.email}
-                    onChange={(e) => handleInputChange("email", e.target.value)}
+                    onChange={e => handleInputChange('email', e.target.value)}
                     required
                   />
                 </div>
@@ -152,7 +216,9 @@ export default function Register() {
                     id="password"
                     type="password"
                     value={formData.password}
-                    onChange={(e) => handleInputChange("password", e.target.value)}
+                    onChange={e =>
+                      handleInputChange('password', e.target.value)
+                    }
                     required
                     minLength={6}
                   />
@@ -162,7 +228,7 @@ export default function Register() {
                   <Input
                     id="title"
                     value={formData.title}
-                    onChange={(e) => handleInputChange("title", e.target.value)}
+                    onChange={e => handleInputChange('title', e.target.value)}
                     placeholder="e.g., Full-Stack Developer"
                     required
                   />
@@ -174,17 +240,23 @@ export default function Register() {
                 <Label htmlFor="experienceLevel">Experience Level *</Label>
                 <Select
                   value={formData.experienceLevel}
-                  onValueChange={(value: "beginner" | "intermediate" | "professional") => 
-                    handleInputChange("experienceLevel", value)
-                  }
+                  onValueChange={(
+                    value: 'beginner' | 'intermediate' | 'professional'
+                  ) => handleInputChange('experienceLevel', value)}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select your experience level" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="beginner">Beginner (0-2 years)</SelectItem>
-                    <SelectItem value="intermediate">Intermediate (2-5 years)</SelectItem>
-                    <SelectItem value="professional">Professional (5+ years)</SelectItem>
+                    <SelectItem value="beginner">
+                      Beginner (0-2 years)
+                    </SelectItem>
+                    <SelectItem value="intermediate">
+                      Intermediate (2-5 years)
+                    </SelectItem>
+                    <SelectItem value="professional">
+                      Professional (5+ years)
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -195,7 +267,7 @@ export default function Register() {
                 <Textarea
                   id="bio"
                   value={formData.bio}
-                  onChange={(e) => handleInputChange("bio", e.target.value)}
+                  onChange={e => handleInputChange('bio', e.target.value)}
                   placeholder="Tell us about yourself, your interests, and what you're working on..."
                   rows={4}
                 />
@@ -207,19 +279,25 @@ export default function Register() {
                 <div className="flex gap-2 mb-3">
                   <Input
                     value={newSkill}
-                    onChange={(e) => setNewSkill(e.target.value)}
+                    onChange={e => setNewSkill(e.target.value)}
                     placeholder="Add a skill..."
-                    onKeyPress={(e) => e.key === "Enter" && (e.preventDefault(), addSkill())}
+                    onKeyPress={e =>
+                      e.key === 'Enter' && (e.preventDefault(), addSkill())
+                    }
                   />
                   <Button type="button" onClick={addSkill} size="sm">
                     <Plus size={16} />
                   </Button>
                 </div>
-                
+
                 {/* Selected Skills */}
                 <div className="flex flex-wrap gap-2 mb-3">
-                  {formData.skills.map((skill) => (
-                    <Badge key={skill} variant="secondary" className="flex items-center gap-1">
+                  {formData.skills.map(skill => (
+                    <Badge
+                      key={skill}
+                      variant="secondary"
+                      className="flex items-center gap-1"
+                    >
                       {skill}
                       <button
                         type="button"
@@ -237,19 +315,22 @@ export default function Register() {
                   Popular skills:
                 </div>
                 <div className="flex flex-wrap gap-1">
-                  {SKILLS_OPTIONS.slice(0, 20).map((skill) => (
+                  {SKILLS_OPTIONS.slice(0, 20).map(skill => (
                     <button
                       key={skill}
                       type="button"
                       onClick={() => {
                         if (!formData.skills.includes(skill)) {
-                          setFormData(prev => ({ ...prev, skills: [...prev.skills, skill] }));
+                          setFormData(prev => ({
+                            ...prev,
+                            skills: [...prev.skills, skill],
+                          }));
                         }
                       }}
                       className={`px-2 py-1 text-xs rounded ${
                         formData.skills.includes(skill)
-                          ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200"
-                          : "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+                          ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                          : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                       }`}
                     >
                       {skill}
@@ -264,7 +345,9 @@ export default function Register() {
                   type="checkbox"
                   id="openToCollaborate"
                   checked={formData.openToCollaborate}
-                  onChange={(e) => handleInputChange("openToCollaborate", e.target.checked)}
+                  onChange={e =>
+                    handleInputChange('openToCollaborate', e.target.checked)
+                  }
                   className="rounded"
                 />
                 <Label htmlFor="openToCollaborate">
@@ -278,7 +361,9 @@ export default function Register() {
                 className="w-full"
                 disabled={registerMutation.isPending}
               >
-                {registerMutation.isPending ? "Creating Account..." : "Create Account"}
+                {registerMutation.isPending
+                  ? 'Creating Account...'
+                  : 'Create Account'}
               </Button>
 
               {/* Back to Home */}
@@ -297,4 +382,4 @@ export default function Register() {
       </div>
     </div>
   );
-} 
+}
