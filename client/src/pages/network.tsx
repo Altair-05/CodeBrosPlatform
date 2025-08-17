@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { useLocation } from "wouter"; // Import useLocation for navigation
+import { useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { User } from "@shared/types";
+import { User } from "@shared/mongo-schema"; //  Fixed import
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,9 +10,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { DeveloperCard } from "@/components/developer-card";
 import { ConnectionModal } from "@/components/connection-modal";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest, queryClient } from "@/lib/queryClient";
+import { queryClient } from "@/lib/queryClient";
+import { sendConnectionRequest } from "@/lib/api-helpers"; // Added API helper import
 import { Search } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
+
 interface SearchFilters {
   query: string;
   experienceLevel: string[];
@@ -23,7 +25,7 @@ interface SearchFilters {
 
 export default function Network() {
   const { toast } = useToast();
-  const [location, setLocation] = useLocation(); // Get both location and setLocation
+  const [location, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
   const [filters, setFilters] = useState<SearchFilters>({
     query: "",
@@ -32,7 +34,8 @@ export default function Network() {
     openToCollaborate: false,
     isOnline: false,
   });
-  const {user}=useAuth();
+  const { user: currentUser } = useAuth(); // ✅ Get current user properly
+  
   // Parse search query from URL on component mount
   React.useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -42,6 +45,7 @@ export default function Network() {
       setFilters(prev => ({ ...prev, query: searchParam }));
     }
   }, [location]);
+  
   const [sortBy, setSortBy] = useState<"newest" | "popular" | "online">("newest");
   const [showConnectionModal, setShowConnectionModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -75,29 +79,30 @@ export default function Network() {
     },
   });
 
-  // Send connection request mutation
-  
+  // ✅ Fixed connection request mutation
   const sendConnectionMutation = useMutation({
-    mutationFn: async ({ requesterId,receiverId, message }: {requesterId: number, receiverId: number; message?: string }) => {
-      const response = await apiRequest("POST", "/api/connections", {
-        requesterId: user?._id, // TODO: Get from auth context
-        receiverId:receiverId,
-        message:message,
-        status: "pending",
-      });
-      return response.json();
+    mutationFn: async ({ receiverId, message }: { receiverId: string; message?: string }) => {
+      if (!currentUser?._id) {
+        throw new Error('No current user found');
+      }
+      return await sendConnectionRequest(
+        currentUser._id.toString(), 
+        receiverId, 
+        message
+      );
     },
     onSuccess: () => {
       toast({
         title: "Success",
         description: "Connection request sent successfully!",
       });
+      setShowConnectionModal(false);
       queryClient.invalidateQueries({ queryKey: ["/api/connections"] });
     },
-    onError: () => {
+    onError: (error: any) => {
       toast({
         title: "Error",
-        description: "Failed to send connection request. Please try again.",
+        description: error.message || "Failed to send connection request. Please try again.",
         variant: "destructive",
       });
     },
@@ -130,7 +135,7 @@ export default function Network() {
   };
 
   const handleConnect = (userId: string) => {
-    const user = users.find(u => u._id === userId);
+    const user = users.find(u => u._id!.toString() === userId); // ✅ Fixed ID comparison
     if (user) {
       setSelectedUser(user);
       setShowConnectionModal(true);
@@ -138,10 +143,9 @@ export default function Network() {
   };
 
   const handleSendRequest = (userId: string, message?: string) => {
-    sendConnectionMutation.mutate({ receiverId: userId, message });
+    sendConnectionMutation.mutate({ receiverId: userId, message }); // ✅ Fixed parameters
   };
   
-  // FIX: Added handler to navigate to the user's profile page.
   const handleViewProfile = (userId: string) => {
     setLocation(`/profile/${userId}`);
   };
@@ -154,7 +158,7 @@ export default function Network() {
         // Sort by number of connections (simulated)
         return Math.random() - 0.5;
       default:
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(); // newest first
+        return new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime(); // newest first
     }
   });
 
@@ -331,12 +335,11 @@ export default function Network() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {sortedUsers.map((user) => (
                       <DeveloperCard
-                        key={user._id}
+                        key={user._id!.toString()}
                         user={user}
-                        currentUserId="current" // TODO: Get from auth context
+                        currentUserId={currentUser?._id?.toString()} // ✅ Fixed current user ID
                         onConnect={handleConnect}
                         onMessage={(userId) => console.log("Message", userId)}
-                        // FIX: Replaced console.log with the new navigation handler.
                         onViewProfile={handleViewProfile}
                       />
                     ))}
