@@ -198,7 +198,7 @@ export default function Home() {
                     >
                       <div className="relative">
                         <div className="w-12 h-12 bg-brand-blue rounded-full flex items-center justify-center text-white font-medium text-lg">
-                          {user.firstName?.[0] || user.username?. || '?'}
+                        {user.firstName?. || user.username?. || '?'}
                         </div>
                         {/* Online indicator */}
                         <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white dark:border-gray-800"></div>
