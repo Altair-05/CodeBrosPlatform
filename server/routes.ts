@@ -11,7 +11,6 @@ import {
   searchUsersSchema
 } from "@shared/mongo-schema";
 import { z } from "zod";
-import { ObjectId } from 'mongodb'; // ADDED: Import ObjectId for database queries
 
 const loginSchema = z.object({
   email: z.string().email(),
@@ -183,28 +182,49 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/connections", async (req, res) => {
     try {
-      const body={
-        requesterId: new ObjectId(req.body.requesterId),
-        receiverId: new ObjectId(req.body.receiverId),
-        status:req.body.status,
-        message: req.body.message
+      const { requesterId, receiverId, message } = req.body;
+      
+      // Validate required fields
+      if (!requesterId || !receiverId) {
+        return res.status(400).json({ message: "Requester ID and Receiver ID are required" });
       }
+      
+      // Don't allow self-connection
+      if (requesterId === receiverId) {
+        return res.status(400).json({ message: "Cannot send connection request to yourself" });
+      }
+      
+      const body = {
+        requesterId: new ObjectId(requesterId),
+        receiverId: new ObjectId(receiverId),
+        status: "pending", // Always start as pending
+        message: message || ""
+      };
+      
       const connectionData = insertConnectionSchema.parse(body);
+      
+      // Check if connection already exists
       const existing = await mongoStorage.getConnection(
         connectionData.requesterId.toString(), 
         connectionData.receiverId.toString()
       );
       
       if (existing) {
-        return res.status(400).json({ message: "Connection already exists" });
+        return res.status(400).json({ 
+          message: `Connection request already ${existing.status}` 
+        });
       }
-
+      
       const connection = await mongoStorage.createConnection(connectionData);
       res.status(201).json(connection);
     } catch (error) {
-      res.status(400).json({ message: error });
+      console.error('Connection creation error:', error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : "Failed to send connection request" 
+      });
     }
   });
+  
 
   app.patch("/api/connections/:id/status", async (req, res) => {
     try {

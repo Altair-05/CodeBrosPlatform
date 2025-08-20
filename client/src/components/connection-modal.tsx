@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { User } from "@shared/schema";
+import { User } from "@shared/mongo-schema";
 import {
   Dialog,
   DialogContent,
@@ -15,7 +15,7 @@ interface ConnectionModalProps {
   isOpen: boolean;
   onClose: () => void;
   targetUser: User | null;
-  onSendRequest: (userId: number, message?: string) => void;
+  onSendRequest: (userId: string, message?: string) => void;
   isLoading?: boolean;
 }
 
@@ -31,7 +31,7 @@ export function ConnectionModal({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (targetUser) {
-      onSendRequest(targetUser.id, message.trim() || undefined);
+      onSendRequest(targetUser._id!.toString(), message.trim() || undefined);
       setMessage("");
       onClose();
     }
