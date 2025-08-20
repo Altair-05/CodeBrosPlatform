@@ -116,7 +116,7 @@ export default function Home() {
                 </div>
                 <div className="ml-4 flex-1">
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                    {activeUsers.length || stats?.totalUsers ?? 0}
+                    {activeUsers.length || (stats?.totalUsers ?? 0)}
                   </p>
                   <p className="text-sm text-gray-600 dark:text-gray-400">Active Developers</p>
                 </div>
@@ -198,7 +198,7 @@ export default function Home() {
                     >
                       <div className="relative">
                         <div className="w-12 h-12 bg-brand-blue rounded-full flex items-center justify-center text-white font-medium text-lg">
-                          {user.firstName?.[0] || user.username?.[0] || '?'}
+                          {user.firstName?.[0] || user.username?. || '?'}
                         </div>
                         {/* Online indicator */}
                         <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white dark:border-gray-800"></div>
