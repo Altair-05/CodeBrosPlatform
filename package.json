@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "cross-env NODE_ENV=development tsx server/index.ts",
     "build": "vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
-    "start": "GENERATE_SOURCEMAP=false && react-scripts start",
+    "start": "cross-env GENERATE_SOURCEMAP=false && react-scripts start",
     "check": "tsc",
     "db:push": "drizzle-kit push",
     "db:seed": "tsx server/db/seed.ts"
@@ -69,6 +69,7 @@
     "react-hook-form": "^7.55.0",
     "react-icons": "^5.4.0",
     "react-resizable-panels": "^2.1.7",
+    "react-scripts": "^5.0.1",
     "recharts": "^2.15.2",
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",

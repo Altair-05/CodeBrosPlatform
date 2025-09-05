@@ -39,10 +39,11 @@ function App() {
         <AuthProvider>
           <TooltipProvider>
             <div className="min-h-screen bg-background">
-              <Header 
-                notificationCount={3}
-                onSearch={(query) => console.log("Search:", query)}
-              />
+              <HeaderWithNotifications
+  notificationCount={notificationCount}
+  onSearch={(query) => console.log("Search:", query)}
+/>
+
               <main>
                 <Router />
               </main>

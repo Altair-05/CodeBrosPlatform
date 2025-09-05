@@ -221,6 +221,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(400).json({ message: "Invalid status update" });
     }
   });
+// Get mutual connections between two users
+app.get("/api/connections/mutual/:userId/:otherUserId", async (req, res) => {
+  try {
+    const { userId, otherUserId } = req.params;
+
+    // Fetch accepted connections for both users
+    const user1Connections = await mongoStorage.getAcceptedConnections(userId);
+    const user2Connections = await mongoStorage.getAcceptedConnections(otherUserId);
+
+    // Extract connectionIds (normalize to string)
+    const user1Ids = user1Connections.map((c: any) =>
+      c.requesterId.toString() === userId ? c.receiverId.toString() : c.requesterId.toString()
+    );
+    const user2Ids = user2Connections.map((c: any) =>
+      c.requesterId.toString() === otherUserId ? c.receiverId.toString() : c.requesterId.toString()
+    );
+
+    // Find intersection = mutuals
+    const mutualIds = user1Ids.filter((id: string) => user2Ids.includes(id));
+
+    // Fetch mutual user details
+    const mutualUsers = await Promise.all(mutualIds.map((id: string) => mongoStorage.getUser(id)));
+
+    res.json(mutualUsers.filter(Boolean)); // remove nulls
+  } catch (error) {
+    console.error("Error fetching mutual connections:", error);
+    res.status(500).json({ message: "Failed to fetch mutual connections" });
+  }
+});
 
   // Message routes
   app.get("/api/messages/conversation/:user1Id/:user2Id", async (req, res) => {
