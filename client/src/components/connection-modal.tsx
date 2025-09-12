@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { User } from "@shared/schema";
 import {
   Dialog,
   DialogContent,
@@ -11,11 +10,19 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
+interface UserMinimal {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  profileImage?: string;
+  title?: string;
+}
+
 interface ConnectionModalProps {
   isOpen: boolean;
   onClose: () => void;
-  targetUser: User | null;
-  onSendRequest: (userId: number, message?: string) => void;
+  targetUser: UserMinimal | null;
+  onSendRequest: (userId: string, message?: string) => void;
   isLoading?: boolean;
 }
 
@@ -30,11 +37,11 @@ export function ConnectionModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (targetUser) {
-      onSendRequest(targetUser.id, message.trim() || undefined);
-      setMessage("");
-      onClose();
-    }
+    if (!targetUser) return;
+
+    onSendRequest(targetUser._id, message.trim() || undefined);
+    setMessage("");
+    onClose();
   };
 
   const handleClose = () => {
@@ -54,16 +61,22 @@ export function ConnectionModal({
         <div className="space-y-4">
           <div className="flex items-center space-x-4">
             <Avatar className="w-12 h-12">
-              <AvatarImage src={targetUser.profileImage} alt={`${targetUser.firstName} ${targetUser.lastName}`} />
+              <AvatarImage
+                src={targetUser.profileImage || ""}
+                alt={`${targetUser.firstName} ${targetUser.lastName}`}
+              />
               <AvatarFallback>
-                {targetUser.firstName[0]}{targetUser.lastName[0]}
+                {targetUser.firstName[0]}
+                {targetUser.lastName[0]}
               </AvatarFallback>
             </Avatar>
             <div>
               <h4 className="font-medium text-gray-900 dark:text-white">
                 {targetUser.firstName} {targetUser.lastName}
               </h4>
-              <p className="text-sm text-gray-600 dark:text-gray-400">{targetUser.title}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                {targetUser.title || ""}
+              </p>
             </div>
           </div>
 
