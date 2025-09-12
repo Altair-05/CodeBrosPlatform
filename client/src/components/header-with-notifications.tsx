@@ -1,15 +1,25 @@
+import React, { useState, useEffect } from "react";
+import { Header } from "./header";
+import { useNotifications } from "../hooks/useNotifications";
 
-import React from 'react';
-import { useNotifications } from '../hooks/useNotifications';
-import { Header } from './header';
+interface HeaderWithNotificationsProps {
+  onSearch?: (query: string) => void;
+}
 
-export const HeaderWithNotifications = () => {
-  const { data: notificationCount = 0 } = useNotifications();
+export const HeaderWithNotifications: React.FC<HeaderWithNotificationsProps> = ({ onSearch }) => {
+  const { data: hookNotificationCount = 0 } = useNotifications();
+  const [notificationCount, setNotificationCount] = useState<number>(hookNotificationCount);
+
+  // Keep state in sync with hook
+  useEffect(() => {
+    setNotificationCount(hookNotificationCount);
+  }, [hookNotificationCount]);
 
   return (
     <Header
       notificationCount={notificationCount}
-      onSearch={(query) => console.log("Search:", query)}
+      setnotificationCount={setNotificationCount} // optional in Header
+      onSearch={onSearch ?? ((query) => console.log("Search:", query))}
     />
   );
 };
