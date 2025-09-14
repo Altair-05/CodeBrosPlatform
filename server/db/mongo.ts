@@ -67,21 +67,21 @@ export class MongoStorage {
   }
 
   // User operations
-  async getUser(id: string): Promise<User | undefined> {
+  async getUser(id: string): Promise<User | null> {
     try {
       const objectId = new ObjectId(id);
       return await this.users.findOne({ _id: objectId });
     } catch (error) {
       console.error("Error getting user:", error);
-      return undefined;
+      return null;
     }
   }
 
-  async getUserByUsername(username: string): Promise<User | undefined> {
+  async getUserByUsername(username: string): Promise<User | null> {
     return await this.users.findOne({ username });
   }
 
-  async getUserByEmail(email: string): Promise<User | undefined> {
+  async getUserByEmail(email: string): Promise<User | null> {
     return await this.users.findOne({ email });
   }
 
@@ -98,7 +98,7 @@ export class MongoStorage {
     return { ...user, _id: result.insertedId };
   }
 
-  async updateUser(id: string, updates: UpdateUser): Promise<User | undefined> {
+  async updateUser(id: string, updates: UpdateUser): Promise<User | null> {
     try {
       const objectId = new ObjectId(id);
       const updateData = {
@@ -112,10 +112,10 @@ export class MongoStorage {
         { returnDocument: 'after' }
       );
 
-      return result || undefined;
+      return result;
     } catch (error) {
       console.error("Error updating user:", error);
-      return undefined;
+      return null;
     }
   }
 
@@ -175,7 +175,7 @@ export class MongoStorage {
   }
 
   // Connection operations
-  async getConnection(requesterId: string, receiverId: string): Promise<Connection | undefined> {
+  async getConnection(requesterId: string, receiverId: string): Promise<Connection | null> {
     try {
       const requesterObjectId = new ObjectId(requesterId);
       const receiverObjectId = new ObjectId(receiverId);
@@ -188,7 +188,7 @@ export class MongoStorage {
       });
     } catch (error) {
       console.error("Error getting connection:", error);
-      return undefined;
+      return null;
     }
   }
 
@@ -231,7 +231,7 @@ export class MongoStorage {
     return { ...connection, _id: result.insertedId };
   }
 
-  async updateConnectionStatus(id: string, status: string): Promise<Connection | undefined> {
+  async updateConnectionStatus(id: string, status: "accepted" | "declined"): Promise<Connection | null> {
     try {
       const objectId = new ObjectId(id);
       const result = await this.connections.findOneAndUpdate(
@@ -245,10 +245,10 @@ export class MongoStorage {
         { returnDocument: 'after' }
       );
 
-      return result || undefined;
+      return result;
     } catch (error) {
       console.error("Error updating connection status:", error);
-      return undefined;
+      return null;
     }
   }
 

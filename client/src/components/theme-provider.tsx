@@ -26,34 +26,39 @@ export function ThemeProvider({
   storageKey = "codebros-ui-theme",
   ...props
 }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(
+  const [theme, setThemeState] = useState<Theme>(
     () => (localStorage.getItem(storageKey) as Theme) || defaultTheme
   );
 
+  const setTheme = (newTheme: Theme) => {
+    localStorage.setItem(storageKey, newTheme);
+    setThemeState(newTheme);
+  };
+
   useEffect(() => {
     const root = window.document.documentElement;
-
     root.classList.remove("light", "dark");
 
+    let currentTheme = theme;
     if (theme === "system") {
-      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
-        .matches
-        ? "dark"
+      currentTheme = window.matchMedia("(prefers-color-scheme: dark)").matches 
+        ? "dark" 
         : "light";
-
-      root.classList.add(systemTheme);
-      return;
     }
 
-    root.classList.add(theme);
-  }, [theme]);
+    root.classList.add(currentTheme);
+    root.setAttribute("data-theme", currentTheme);
+    
+    // Save to localStorage
+    localStorage.setItem(storageKey, theme);
+    
+    // Add data-theme attribute for CSS-in-JS libraries
+    document.documentElement.setAttribute('data-theme', currentTheme);
+  }, [theme, storageKey]);
 
   const value = {
     theme,
-    setTheme: (theme: Theme) => {
-      localStorage.setItem(storageKey, theme);
-      setTheme(theme);
-    },
+    setTheme,
   };
 
   return (
